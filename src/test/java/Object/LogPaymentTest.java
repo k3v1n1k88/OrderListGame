@@ -1,0 +1,211 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Object;
+
+import Exception.ParseLogException;
+import java.util.logging.Level;
+import org.apache.log4j.Logger;
+import org.json.simple.parser.ParseException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ *
+ * @author root
+ */
+public class LogPaymentTest {
+    private static final Logger LOGGER = Logger.getLogger(LogPaymentTest.class);
+    private static String testString;
+    
+    public LogPaymentTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of logToObj method, of class LogPayment.
+     */
+    @Test
+    public void testRightString1(){
+        testString = "{\"gameID\":\"1232aa6\",\"amount\":\"1000000\",\"userID\":\"12a2345\"}";
+        LogPayment logPayment;
+        try {
+            logPayment = LogPayment.logToObj(testString);
+            assertEquals("1232aa6",logPayment.getGameID());
+            assertEquals(1000000,logPayment.getAmount());
+            assertEquals("12a2345",logPayment.getUserID());
+        } catch (ParseException | ParseLogException ex) {
+            //LOGGER.info(testString);
+            fail("Not hope catch exception here");
+        }
+        
+    }
+    @Test
+    public void testRightString2(){
+        testString = "{\"gameID\":\"122126\",\"amount\":\"12253\",\"userID\":\"12d34j5\"}";
+        LogPayment logPayment;
+        try {
+            logPayment = LogPayment.logToObj(testString);
+            assertEquals("122126",logPayment.getGameID());
+            assertEquals(12253,logPayment.getAmount());
+            assertEquals("12d34j5",logPayment.getUserID());
+        } catch (ParseException | ParseLogException ex) {
+            fail("Not hope catch exception");
+        }
+    }
+    @Test
+    public void testStringIsNotRightFormat1(){
+        testString = "{\"gameID\":\"12326\",\"amount\":\"12322\",\"userID\":\"12345\"";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseException");
+        }catch(ParseException ex){
+            
+        } catch (ParseLogException ex) {
+            fail("This should have thrown a ParseException");
+        }
+    }
+    @Test
+    public void testStringIsNotRightFormat2(){
+        testString = "{\"12326\",ddddd\"amount\":\"122223\",\"userID\":\"12345\"}";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseException");
+        }catch(ParseException ex){
+            //LOGGER.info(ex);
+        } catch (ParseLogException ex) {
+            fail("This should have thrown a ParseException");
+        }
+    }
+    @Test
+    public void testStringEmpty(){
+        testString = "";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseException");
+        }catch(ParseException ex){
+            //LOGGER.info(ex);
+        } catch (ParseLogException ex) {
+            fail("This should have thrown a ParseException");
+        }
+    }
+    @Test
+    public void testAmountMissing() {
+        testString = "{\"gameID\":\"12326\",\"userID\":\"12345\"}";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseLogException");
+        }catch(ParseException ex){
+            fail("This should have thrown a ParseLogException");
+        } catch (ParseLogException ex) {
+            //LOGGER.info(ex);
+        }
+    }
+    @Test
+    public void testGameIDMissing() {
+        testString = "{\"amount\":\"12223\",\"userID\":\"12345\"}";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseLogException");
+        }catch(ParseException ex){
+            fail("This should have thrown a ParseLogException");
+        } catch (ParseLogException ex) {
+            //LOGGER.info(ex);
+        }
+    }
+    @Test
+    public void testUserIDMissing() {
+        testString = "{\"gameID\":\"12326\",\"amount\":\"121213\"}";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseLogException");
+        }catch(ParseException ex){
+            fail("This should have thrown a ParseLogException");
+        } catch (ParseLogException ex) {
+            //LOGGER.info(ex);
+        }
+    }
+    @Test
+    public void testAllInfoMissing() {
+        testString = "{}";
+        try{
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            fail("This should have thrown a ParseLogException");
+        }catch(ParseException ex){
+            fail("This should have thrown a ParseLogException");
+        } catch (ParseLogException ex) {
+            //LOGGER.info(ex);
+        }
+    }
+    @Test
+    public void testGameIDTooLong() {
+        testString = "{\"gameID\":\"123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26\",\"amount\":\"123\",\"userID\":\"12345\"}";
+        try {
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            assertEquals("123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26",logPayment.getGameID());
+            assertEquals(123,logPayment.getAmount());
+            assertEquals("12345",logPayment.getUserID());
+        } catch (ParseException | ParseLogException ex) {
+            fail("Not hope catch exception");
+        }
+    }
+    @Test
+    public void testUserIDTooLong() {
+        testString = "{\"gameID\":\"12326\",\"amount\":\"123\",\"userID\":\"123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26\"}";
+        try {
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            assertEquals("12326",logPayment.getGameID());
+            assertEquals(123,logPayment.getAmount());
+            assertEquals("123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26",logPayment.getUserID());
+        } catch (ParseException | ParseLogException ex) {
+            fail("Not hope catch exception");
+        }
+    }
+    @Test
+    public void testAmountTooLong() {
+        testString = "{\"gameID\":\"12326\",\"amount\":\"1218585768785476847687467457658768476666457684678676586785768545765565\",\"userID\":\"12345\"}";
+        try {
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            assertEquals("12326",logPayment.getGameID());     
+            assertEquals("12345",logPayment.getUserID());
+            fail("this should be thrown ParseLogException");
+        } catch (ParseException ex) {
+            fail("this should be thrown ParseLogException");
+        } catch (ParseLogException ex) {
+        }
+    }
+    @Test
+    public void testStringTooLong() {
+        testString = "{\"gameID\":\"023584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26\",\"amount\":\"1234557678\",\"userID\":\"223584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26\"}";
+        try {
+            LogPayment logPayment = LogPayment.logToObj(testString);
+            assertEquals("023584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26",logPayment.getGameID());
+            assertEquals(1234557678,logPayment.getAmount());
+            assertEquals("223584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26123584758478574875847854875847584785784758jcjjfhgjfhjghfjghf26",logPayment.getUserID());
+        } catch (ParseException | ParseLogException ex) {
+            fail("Not hope catch exception");
+        }
+    }
+   
+}
