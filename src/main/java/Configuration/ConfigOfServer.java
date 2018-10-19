@@ -10,7 +10,5 @@ package Configuration;
  * @author root
  */
 public class ConfigOfServer {
-    
-    private static final int port = 9090;
     private ConfigOfServer(){};
 }

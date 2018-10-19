@@ -5,8 +5,8 @@
  */
 package Object;
 
-import Database.DatabasePerformSQL;
-import Database.DatabasePerformStrategy;
+import Strategy.DatabasePerform.DatabasePerformMySQL;
+import Strategy.DatabasePerform.DatabasePerformStrategy;
 import java.io.IOException;
 
 /**
@@ -18,7 +18,7 @@ public class RequestOrderList {
     private DatabasePerformStrategy databasePerformStrategy;
     
     public RequestOrderList(String session){
-        this(session,new DatabasePerformSQL());
+        
     }
     
     public RequestOrderList(String session, DatabasePerformStrategy databasePerformStrategy){

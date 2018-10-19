@@ -5,19 +5,9 @@
  */
 package Object;
 
-import Configuration.ConfigOfSystem;
-import Constant.DBInfo;
-import Constant.LogInfo;
-import DatabaseHelperSQL.DatabaseController;
-import Database.DatabaseMappingMissingStrategy;
-import Database.DatabasePerformSQL;
-import Database.DatabasePerformStrategy;
 import ErrorCode.ParserErrorCode;
 import Exception.ParseLogException;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,12 +17,11 @@ import org.json.simple.parser.ParseException;
  *
  * @author root
  */
-public class LogPayment {
-    private static final long serialVersionUID = 0L;
+public class LogPayment implements Log{
+    
+    private static final long serialVersionUID = 0_0_1L;
     
     private static final Logger LOGGER = Logger.getLogger(LogPayment.class);
-    private DatabasePerformStrategy databasePerformStrategy;
-    private DatabaseMappingMissingStrategy databaseMappintMissingStrategy;
             
     private String userID;
     private String gameID;
@@ -50,26 +39,33 @@ public class LogPayment {
         return amount;
     }
     
+    public LogPayment(){
+        this("","",0);
+    }
+    
     public LogPayment(String userID, String gameID, long amount){
         this.userID = userID;
         this.gameID = gameID;
         this.amount = amount;
-        this.databasePerformStrategy = new DatabasePerformSQL();
     }
     
-    public static LogPayment logToObj(String log) throws ParseException, ParseLogException, IOException{
+    public static LogPayment logToObj(String log) throws ParseException, ParseLogException{
         LogPayment logPayment = null;
         JSONObject jsonObj = null;
         
         JSONParser jsonParser = new JSONParser();
         try {
             jsonObj = (JSONObject) jsonParser.parse(log);
-            if(!jsonObj.containsKey(LogInfo.userIDString)||!jsonObj.containsKey(LogInfo.userIDString)||!jsonObj.containsKey(LogInfo.userIDString)){
+            if(!jsonObj.containsKey(Constant.DBConstantString.USERID_STRING)
+                    ||!jsonObj.containsKey(Constant.DBConstantString.GAMEID_STRING)
+                    ||!jsonObj.containsKey(Constant.DBConstantString.AMOUNT_STRING)){
+                
                 throw new ParseLogException(ParserErrorCode.MISSING_2_1);
+            
             }
             try{
-                String userID = String.valueOf(jsonObj.get(LogInfo.userIDString));
-                String gameID = String.valueOf(LogInfo.gameIDString);
+                String userID = String.valueOf(jsonObj.get(Constant.DBConstantString.USERID_STRING));
+                String gameID = String.valueOf(jsonObj.get(Constant.DBConstantString.GAMEID_STRING));
                 long amount =  Long.parseLong(String.valueOf(jsonObj.get("amount")));
                 
                 logPayment = new LogPayment(userID,gameID,amount);
@@ -82,11 +78,23 @@ public class LogPayment {
             LOGGER.error("Error when parse log message to JSON. Check your log message and try it again.\nError detail:\n"+ex);
             throw ex;
         } catch (ParseLogException ex) {
-            LOGGER.error("Error when create LogPayment from log message. Check your log message and try it aganin.\nError detail:\n"+ex);
+            LOGGER.error("Error when create LogPayment from log message:\""+log+"\"\n. Check your log message and try it aganin.\nError detail:\n"+ex);
             throw ex;
         }
     }
-    public void mappingDatabase() throws Exception{
-        databasePerformStrategy.mappingToDatabase(this);
+
+    @Override
+    public String parse2String() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty(Constant.DBConstantString.USERID_STRING, this.userID);
+        obj.addProperty(Constant.DBConstantString.GAMEID_STRING, this.gameID);
+        obj.addProperty(Constant.DBConstantString.AMOUNT_STRING, this.amount);
+        return obj.toString();
     }
+
+    @Override
+    public Log parse2Log(String infoLog) throws ParseException, ParseLogException {
+        return LogPayment.logToObj(infoLog);
+    }
+
 }

@@ -5,15 +5,9 @@
  */
 package Object;
 
-
-import Constant.LogInfo;
-import Database.DatabaseMappingMissingStrategy;
-import Database.DatabasePerformSQL;
-import Database.DatabasePerformStrategy;
 import ErrorCode.ParserErrorCode;
 import Exception.ParseLogException;
-import java.io.IOException;
-import java.sql.SQLException;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,7 +17,7 @@ import org.json.simple.parser.ParseException;
  *
  * @author root
  */
-public class LogLogin {
+public class LogLogin implements Log{
     private static final long serialVersionUID = 0L;
     
     private static final Logger LOGGER = Logger.getLogger(LogLogin.class);
@@ -31,15 +25,16 @@ public class LogLogin {
     private String session;
     private String userID;
     private String gameID;
-    private DatabasePerformStrategy databasePerformStrategy;
 
+    public LogLogin(){
+        this("","","");
+    }
+    
     public LogLogin(String session, String userID, String gameID){
         this.session = session;
         this.userID = userID;
         this.gameID = gameID;
-        databasePerformStrategy = new DatabasePerformSQL();
     }
-    
     
     public String getSession() {
         return session;
@@ -53,11 +48,8 @@ public class LogLogin {
         return gameID;
     }
     
-    public void setDatabasePerformStrategy(DatabasePerformStrategy databasePerformStrategy){
-        this.databasePerformStrategy = databasePerformStrategy;
-    }
-    
-    public static LogLogin logToObj(String log) throws ParseException, ParseLogException, IOException{
+    public static LogLogin logToObj(String log) throws ParseException, ParseLogException{
+        
         LogLogin logLogin = null;
         JSONObject jsonObj = null;
         
@@ -65,12 +57,14 @@ public class LogLogin {
         try {
             jsonObj = (JSONObject) jsonParser.parse(log);
             
-            if(!jsonObj.containsKey(LogInfo.userIDString)||!jsonObj.containsKey(LogInfo.gameIDString)||!jsonObj.containsKey(LogInfo.sessionString)){
+            if(!jsonObj.containsKey(Constant.DBConstantString.USERID_STRING)
+                    ||!jsonObj.containsKey(Constant.DBConstantString.GAMEID_STRING)
+                    ||!jsonObj.containsKey(Constant.DBConstantString.SESSION_STRING)){
                 throw new ParseLogException(ParserErrorCode.MISSING_1);
             }
-            String session = String.valueOf(jsonObj.get(LogInfo.sessionString));
-            String userID = String.valueOf(jsonObj.get(LogInfo.userIDString));
-            String gameID = String.valueOf(jsonObj.get(LogInfo.gameIDString));
+            String session = String.valueOf(jsonObj.get(Constant.DBConstantString.SESSION_STRING));
+            String userID = String.valueOf(jsonObj.get(Constant.DBConstantString.USERID_STRING));
+            String gameID = String.valueOf(jsonObj.get(Constant.DBConstantString.GAMEID_STRING));
             logLogin = new LogLogin(session,userID,gameID);  
             
         } catch (ParseException ex) {
@@ -83,37 +77,19 @@ public class LogLogin {
         return logLogin;
     }
     
-    public void accessToDatabase() throws Exception{
-        databasePerformStrategy.accessToDatabase(this);
+
+    @Override
+    public String parse2String() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty(Constant.DBConstantString.USERID_STRING, this.userID);
+        obj.addProperty(Constant.DBConstantString.GAMEID_STRING, this.gameID);
+        obj.addProperty(Constant.DBConstantString.SESSION_STRING, this.session);
+        return obj.toString();
     }
 
-    
-//    private int accessToPointOfGame() throws SQLException{
-//        Connection cnn = databaseController.getConnection();
-//        String sql = "";
-//        try {
-//            Statement statement = cnn.createStatement();
-//            String format = "UPDATE %s"+
-//                            " SET %s = %s + 1"+
-//                            " WHERE %s IN (SELECT %s FROM %s WHERE %s=\'%s\')";
-//            sql = String.format(format, DBInfo.pointOfGameTableString,
-//                                        DBInfo.pointString,
-//                                        DBInfo.pointString,
-//                                        DBInfo.gameIDString,
-//                                        DBInfo.gameIDString,
-//                                        DBInfo.topScoreGameTableString,
-//                                        DBInfo.sessionString,
-//                                        this.session);
-//            int res = statement.executeUpdate(sql);
-//            LOGGER.info("SQL instructment: "+sql+"\n");
-//            return res;
-//            
-//        } catch(SQLException ex){
-//            LOGGER.error("Error with SQL statement: "+sql+".\nDetail:"+ex);
-//            throw ex;
-//        }finally {
-//            cnn.close();
-//        }
-//    }
+    @Override
+    public Log parse2Log(String infoLog) throws ParseException, ParseLogException {
+        return LogLogin.logToObj(infoLog);
+    }
 
 }
