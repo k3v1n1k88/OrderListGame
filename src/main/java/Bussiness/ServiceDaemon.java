@@ -31,7 +31,6 @@ public class ServiceDaemon {
             new Thread(new ProcessLogLogin(conf)).start();
         }catch(ConfigException cex){
             System.out.println("Cannot start server because have problem with config");
-            logger.error(cex);
         }
         
     }
