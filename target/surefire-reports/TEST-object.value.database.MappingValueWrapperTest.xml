@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="object.value.database.MappingValueWrapperTest" time="0.004" tests="2" errors="0" skipped="0" failures="0">
+<testsuite name="object.value.database.MappingValueWrapperTest" time="0" tests="2" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64"/>
     <property name="java.vm.version" value="25.181-b13"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
-    <property name="maven.multiModuleProjectDirectory" value="/zserver/java-projects/OrderList"/>
+    <property name="maven.multiModuleProjectDirectory" value="/zserver/java-projects/OrderList1"/>
     <property name="java.vendor.url" value="http://java.oracle.com/"/>
     <property name="path.separator" value=":"/>
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.os.patch.level" value="unknown"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="user.dir" value="/zserver/java-projects/OrderList"/>
+    <property name="user.dir" value="/zserver/java-projects/OrderList1"/>
     <property name="java.runtime.version" value="1.8.0_181-8u181-b13-1ubuntu0.16.04.1-b13"/>
     <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
     <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/endorsed"/>
@@ -58,6 +58,6 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase name="testParse" classname="object.value.database.MappingValueWrapperTest" time="0.001"/>
-  <testcase name="testToJSONString" classname="object.value.database.MappingValueWrapperTest" time="0.003"/>
+  <testcase name="testParse" classname="object.value.database.MappingValueWrapperTest" time="0"/>
+  <testcase name="testToJSONString" classname="object.value.database.MappingValueWrapperTest" time="0"/>
 </testsuite>
