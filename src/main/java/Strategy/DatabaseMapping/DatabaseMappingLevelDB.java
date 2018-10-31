@@ -8,7 +8,7 @@ package Strategy.DatabaseMapping;
 import Constant.DBConstantString;
 import DatabaseConnectionPool.DatabaseConnectionPoolLevelDB;
 import Exception.DatabaseException;
-import Object.LogPayment;
+import Log.LogPayment;
 import Strategy.DatabaseMappingMissing.DatabaseMappingLevelDB;
 import com.google.gson.JsonObject;
 import java.io.File;
@@ -76,7 +76,7 @@ public class DatabaseMappingLevelDB implements DatabaseMappingStrategy {
     private Date getDate() throws UnknownHostException, IOException {
         NTPUDPClient timeClient = new NTPUDPClient();
 
-        InetAddress inetAddress = InetAddress.getByName(Constant.PathConstantString.TIME_SERVER_ADDRESS);
+        InetAddress inetAddress = InetAddress.getByName(Constant.PathConstant.TIME_SERVER_ADDRESS);
         TimeInfo timeInfo = timeClient.getTime(inetAddress);
         long returnTime = timeInfo.getReturnTime();
 

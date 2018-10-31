@@ -13,7 +13,9 @@ import java.io.PrintWriter;
  * @author root
  */
 public class DatabaseException extends Exception{
+    
     private static final long serialVersionUID = -2332210270382264631L;
+    
     private Throwable nestedThrowable = null;
     
     public DatabaseException(){

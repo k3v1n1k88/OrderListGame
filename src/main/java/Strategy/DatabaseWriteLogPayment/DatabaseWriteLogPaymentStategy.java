@@ -5,7 +5,7 @@
  */
 package Strategy.DatabaseWriteLogPayment;
 
-import Object.LogPayment;
+import Log.LogPayment;
 
 /**
  *

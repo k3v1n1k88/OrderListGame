@@ -10,13 +10,20 @@ import java.util.Set;
 /**
  *
  * @author root
+ * @param <T>: database connection
  */
-public interface DatabaseConnectionPool {
-    public Object borrowObject() throws Exception;
-    public void returnObject(Object obj);
-    public void invalidateObject(Object obj) throws Exception;
-    public void close();
-    public void clear();
-    public boolean isClosed();
-    public Set<Object> listAllObject();
+public interface DatabaseConnectionPool<T extends DatabaseConnection> {
+    
+    public T borrowObjectFromPool() throws Exception;
+    
+    public void returnObjectToPool(T obj) throws Exception;
+    
+    public void invalidateObjectOfPool(T obj) throws Exception;
+    
+    public void closePool() throws Exception;
+    
+    public void clearPool() throws Exception;
+    
+    public boolean isClosedPool();
+ 
 }

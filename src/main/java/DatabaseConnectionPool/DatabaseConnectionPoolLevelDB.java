@@ -6,100 +6,114 @@
 package DatabaseConnectionPool;
 
 import Configuration.ConfigConnectionPool;
-import Constant.PoolConstantString;
-import Constant.PathConstantString;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import org.apache.commons.pool2.impl.AbandonedConfig;
+import Constant.PathConstant;
+import Exception.ConfigException;
+import Exception.PoolException;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 /**
  *
  * @author root
  */
-public class DatabaseConnectionPoolLevelDB implements DatabaseConnectionPool{
+public class DatabaseConnectionPoolLevelDB implements DatabaseConnectionPool<DatabaseLevelDBConnection>{
     
-    private GenericObjectPool pool;
+    private GenericObjectPool<DatabaseLevelDBConnection> internalPool;
     
-    public DatabaseConnectionPoolLevelDB(DatabaseLevelDBConnectionFactory factory) throws IOException{
-        this(factory, PathConstantString.PATH_TO_POOL_CONFIG_FILE);
-    }
+    private ConfigConnectionPool config;
     
-    public DatabaseConnectionPoolLevelDB(DatabaseLevelDBConnectionFactory factory, String pathPoolConfig) throws IOException{
-        this(factory,new GenericObjectPoolConfig(),new AbandonedConfig(),pathPoolConfig);
-    }
-    
-    public DatabaseConnectionPoolLevelDB(DatabaseLevelDBConnectionFactory factory, GenericObjectPoolConfig config, AbandonedConfig abandonedConfig, String pathPoolConfig) throws IOException{
+    public DatabaseConnectionPoolLevelDB(DatabaseLevelDBConnectionFactory factory, ConfigConnectionPool config) throws ConfigException{
         
-        this.pool = new GenericObjectPool<DatabaseLevelDBConnection>(factory,config,abandonedConfig);
+        this.config = config;
         
-        ConfigConnectionPool conf = ConfigConnectionPool.getInstance(pathPoolConfig);
+        this.internalPool = new GenericObjectPool<>(factory);
         
-        this.pool.setBlockWhenExhausted(conf.getBooleanParam(PoolConstantString.BLOCK_WHEN_EXHAUSTED));
+        this.internalPool.setBlockWhenExhausted(this.config.isBlockWhenExhausted());
         
-        this.pool.setLifo(conf.getBooleanParam(PoolConstantString.RETURN_POLICY));
+        this.internalPool.setLifo(this.config.isLifo());
         
-        this.pool.setMaxIdle(conf.getIntParam(PoolConstantString.MAX_IDLE));
+        this.internalPool.setMaxIdle(this.config.getMaxIdle());
         
-        this.pool.setMaxTotal(conf.getIntParam(PoolConstantString.MAX_TOTAL));
+        this.internalPool.setMaxTotal(this.config.getMaxTotal());
         
-        this.pool.setMaxWaitMillis(conf.getLongParam(PoolConstantString.MAX_WAIT_MILLIS));
+        this.internalPool.setMaxWaitMillis(this.config.getMaxWaitMillis());
         
-        this.pool.setMinIdle(conf.getIntParam(PoolConstantString.MIN_IDLE));
+        this.internalPool.setMinIdle(this.config.getMinIdle());
         
-        this.pool.setMinEvictableIdleTimeMillis(conf.getLongParam(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS));
+        this.internalPool.setMinEvictableIdleTimeMillis(this.config.getMinEvictableIdleTimeMillis());
         
-        this.pool.setNumTestsPerEvictionRun(conf.getIntParam(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN));
+        this.internalPool.setNumTestsPerEvictionRun(this.config.getNumTestsPerEvictionRun());
         
-        this.pool.setSoftMinEvictableIdleTimeMillis(conf.getLongParam(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS));
+        this.internalPool.setSoftMinEvictableIdleTimeMillis(this.config.getSoftMinEvictableIdleTimeMillis());
         
-        this.pool.setTestOnBorrow(conf.getBooleanParam(PoolConstantString.TEST_ON_BORROW));
+        this.internalPool.setTestOnBorrow(this.config.isTestOnBorrow());
         
-        this.pool.setTestOnReturn(conf.getBooleanParam(PoolConstantString.TEST_ON_RETURN));
+        this.internalPool.setTestOnReturn(this.config.isTestOnReturn());
         
-        this.pool.setTestWhileIdle(conf.getBooleanParam(PoolConstantString.TEST_WHILE_IDLE));
+        this.internalPool.setTestWhileIdle(this.config.isTestWhileIdle());
         
-        this.pool.setTimeBetweenEvictionRunsMillis(conf.getLongParam(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS));     
+        this.internalPool.setTimeBetweenEvictionRunsMillis(this.config.getTimeBetweenEvictionRunsMillis()); 
     
     } 
-
-    @Override
-    public Object borrowObject() throws Exception {
-        return pool.borrowObject();
+    
+    public DatabaseConnectionPoolLevelDB(DatabaseLevelDBConnectionFactory factory) throws ConfigException{
+        this(factory,new ConfigConnectionPool());
     }
 
     @Override
-    public void returnObject(Object obj) {
-        this.pool.returnObject((DatabaseLevelDBConnection) obj);
-    }
-
-    @Override
-    public void invalidateObject(Object obj) throws Exception{
-        this.pool.invalidateObject((DatabaseLevelDBConnection) obj);
-    }
-
-    @Override
-    public void close() {
-        if(this.pool != null){
-            this.pool.close();
+    public DatabaseLevelDBConnection borrowObjectFromPool() throws PoolException {
+        try{
+            return this.internalPool.borrowObject();
+        } catch (Exception ex) {
+            throw new PoolException("Cannot borrow object from pool",ex);
         }
     }
 
     @Override
-    public void clear() {
-        this.pool.clear();
+    public void returnObjectToPool(DatabaseLevelDBConnection resource) throws PoolException{
+        if(resource != null){
+            try{
+                this.internalPool.returnObject(resource);
+            }catch(Exception ex){
+                invalidateObjectOfPool(resource);
+                throw new PoolException("Cannot return object to pool",ex);
+            }
+        }
     }
 
     @Override
-    public boolean isClosed() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void invalidateObjectOfPool(DatabaseLevelDBConnection source) throws PoolException {
+        try {
+            this.internalPool.invalidateObject(source);
+        } catch (Exception ex) {
+            throw new PoolException("Cannot invalidate object of pool",ex);
+        }
     }
 
     @Override
-    public Set<Object> listAllObject() {
-        return new HashSet<>(this.pool.listAllObjects());
+    public void closePool() throws PoolException {
+        if(this.internalPool != null){
+            try{
+                this.internalPool.close();
+            }catch(Exception ex){
+                throw new PoolException("Cannot closr pool",ex);
+            }
+        }
+    }
+
+    @Override
+    public void clearPool() throws PoolException {
+        if(this.internalPool != null){
+            try{
+                this.internalPool.clear();
+            }catch(Exception ex){
+                throw new PoolException("Cannot clear pool",ex);
+            }
+        }
+    }
+
+    @Override
+    public boolean isClosedPool() {
+        return this.internalPool.isClosed();
     }
 
 }

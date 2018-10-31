@@ -5,20 +5,15 @@
  */
 package MessageQueue;
 
+import Exception.ConfigException;
 import Exception.ParseLogException;
-import Object.LogLogin;
-import Object.LogPayment;
+import Log.LogLogin;
+import Log.LogPayment;
+import Log.LogPayment;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import java.util.ArrayList;
 import org.json.simple.parser.ParseException;
-import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -26,23 +21,23 @@ import redis.clients.jedis.Jedis;
  */
 public class consumer {
 
-    public static void main(String[] args) throws IOException, ParseException, ParseLogException {
-        Jedis jedis = new Jedis("localhost", 6379,2000,2000,true);
-        jedis.connect();
-        jedis.auth("nhakhoahoc");
-        System.out.println(jedis.ping());
-//        WrapperConsumer wConsumer = new WrapperConsumer("123",LogPayment.class);
-////        KafkaConsumer consumer = wConsumer.getConsumer();
-//        System.out.println("Consumer starting...");
-//        while (true) {
-//            try {
-//                List<LogPayment> listPayment = wConsumer.poll(1000);
-//                for(LogPayment log : listPayment){
-//                    System.out.println(log.parse2String());
-//                }
-//            } catch (Exception ex) {
-//                
-//            }
-//        }
+    public static void main(String[] args) throws IOException, ParseException, ParseLogException, ConfigException {
+//        Jedis jedis = new Jedis("localhost", 6379,2000,2000,false);
+//        jedis.connect();
+//        jedis.auth("nhakhoahoc");
+//        System.out.println(jedis.ping());
+        ConsumerLogLogin consumer = new ConsumerLogLogin("LogLogin");
+//        KafkaConsumer consumer = wConsumer.getConsumer();
+        System.out.println("Consumer starting...");
+        while (true) {
+            try {
+                ArrayList<LogLogin> listLog = (ArrayList<LogLogin>) consumer.poolLog(1000);
+                for(LogLogin log : listLog){
+                    System.out.println(log.parse2String());
+                }
+            } catch (Exception ex) {
+                
+            }
+        }
     }
 }

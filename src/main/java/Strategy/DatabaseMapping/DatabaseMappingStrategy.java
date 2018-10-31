@@ -5,7 +5,7 @@
  */
 package Strategy.DatabaseMapping;
 
-import Object.LogPayment;
+import Log.LogPayment;
 
 /**
  *

@@ -5,9 +5,8 @@
  */
 package DatabaseConnectionPool;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
+import Configuration.ConfigDatabaseRedis;
+import Exception.ConfigException;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -19,62 +18,45 @@ import redis.clients.jedis.Jedis;
  * @author root
  */
 public class DatabaseRedisConnectionFactory implements PooledObjectFactory<DatabaseRedisConnection> {
-
-    private DatabaseInfo databaseInfo;
-    private final int connectionTimeout;
-    private final int soTimeout;
-    private final int database;
-    private final String clientName;
-    private final boolean ssl;
-    private final SSLSocketFactory sslSocketFactory;
-    private final SSLParameters sslParameters;
-    private final HostnameVerifier hostnameVerifier;
     
-    private Jedis connection;
+    private ConfigDatabaseRedis config;
+    private String clientName;
+    private int database;
     
-    public DatabaseRedisConnectionFactory(String host,int port){
-        this(new DatabaseInfo(host,port));
+    private static final String DEFAULT_CLIENT_NAME = "vng.com.vn";
+    private static final int DEFAULT_DATABASE = 0;
+    
+    public DatabaseRedisConnectionFactory(int database, String clientName) throws ConfigException{
+        this(database,clientName,new ConfigDatabaseRedis());
     }
     
-    public DatabaseRedisConnectionFactory(DatabaseInfo databaseInfo){
-        this(databaseInfo,2000,2000,false,0,Constant.DBConstantString.DEFAULT_CLIENT_NAME,null,null,null);
-    }
-    
-    public DatabaseRedisConnectionFactory(DatabaseInfo databaseInfo, int database){
-        this(databaseInfo,2000,2000,false,database,Constant.DBConstantString.DEFAULT_CLIENT_NAME,null,null,null);
-    }
-    
-    public DatabaseRedisConnectionFactory(DatabaseInfo databaseInfo,
-                                    int connectionTimeout,
-                                    int soTimeout,
-                                    boolean ssl,
-                                    int database,
-                                    String clientName,
-                                    SSLSocketFactory sslSocketFactory,
-                                    SSLParameters sslParameters,
-                                    HostnameVerifier hostnameVerifier){
-        this.databaseInfo = databaseInfo;
-        this.connectionTimeout = connectionTimeout;
-        this.soTimeout = soTimeout;
-        this.ssl = ssl;
+    public DatabaseRedisConnectionFactory(int database, String clientName, ConfigDatabaseRedis config) throws ConfigException{
+        this.config = config;
         this.database = database;
         this.clientName = clientName;
-        this.sslSocketFactory = sslSocketFactory;
-        this.sslParameters = sslParameters;
-        this.hostnameVerifier = hostnameVerifier;
     }
-
+    
+    public DatabaseRedisConnectionFactory(String clientName, ConfigDatabaseRedis config) throws ConfigException{
+        this(DatabaseRedisConnectionFactory.DEFAULT_DATABASE,clientName,config);
+    }
+    
+    public DatabaseRedisConnectionFactory(String clientName) throws ConfigException{
+        this(DatabaseRedisConnectionFactory.DEFAULT_DATABASE, clientName);
+    }
+    
+    public DatabaseRedisConnectionFactory() throws ConfigException{
+        this(DatabaseRedisConnectionFactory.DEFAULT_CLIENT_NAME);
+    }
     @Override
     public PooledObject<DatabaseRedisConnection> makeObject() throws Exception {
-        DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(this.databaseInfo,
-                    this.connectionTimeout,
-                    this.soTimeout,
-                    this.ssl,
+        DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(this.config.getHost(),
+                    this.config.getPort(),
+                    this.config.getPassword(),
+                    this.config.getConnectionTimeoutMillius(),
+                    this.config.getSoTimeoutMillius(),
+                    this.config.isSSL(),
                     this.database,
-                    this.clientName,
-                    this.sslSocketFactory,
-                    this.sslParameters,
-                    this.hostnameVerifier);
+                    this.clientName);
         dbcnn.createConnection();
         return new DefaultPooledObject<DatabaseRedisConnection>(dbcnn);
     }
@@ -101,14 +83,15 @@ public class DatabaseRedisConnectionFactory implements PooledObjectFactory<Datab
         DatabaseRedisConnection dbcnn = pooledJedis.getObject();
         Jedis jedis = dbcnn.getConnection();
         try {
-            String host= this.databaseInfo.getHostAddress();
-            int port = this.databaseInfo.getPort();
+            String host= this.config.getHost();
+            int port = this.config.getPort();
             String connectionHost = jedis.getClient().getHost();
             int connectionPort = jedis.getClient().getPort();
 
             return host.equals(connectionHost)
                     && port == connectionPort && jedis.isConnected()
                     && jedis.ping().equals("PONG");
+            
         } catch (final Exception e) {
             return false;
         }

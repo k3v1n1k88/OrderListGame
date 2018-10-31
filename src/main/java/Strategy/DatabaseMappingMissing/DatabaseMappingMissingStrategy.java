@@ -6,7 +6,7 @@
 package Strategy.DatabaseMappingMissing;
 
 import Exception.DatabaseException;
-import Object.LogPayment;
+import Log.LogPayment;
 import java.io.IOException;
 
 /**

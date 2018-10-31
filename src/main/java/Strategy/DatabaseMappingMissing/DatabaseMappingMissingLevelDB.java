@@ -11,7 +11,7 @@ import DatabaseConnectionPool.DatabaseConnectionPoolLevelDB;
 import DatabaseConnectionPool.DatabaseLevelDBConnection;
 import DatabaseConnectionPool.DatabaseLevelDBConnectionFactory;
 import Exception.DatabaseException;
-import Object.LogPayment;
+import Log.LogPayment;
 import com.google.gson.JsonObject;
 
 import org.apache.log4j.Logger;
@@ -48,7 +48,7 @@ public class DatabaseMappingMissingLevelDB implements DatabaseMappingMissingStra
     
     static{
         try {
-            Ini ini = new Ini(new File(Constant.PathConstantString.PATH_TO_DATABASE_CONFIG_FILE));
+            Ini ini = new Ini(new File(Constant.PathConstant.PATH_TO_DATABASE_CONFIG_FILE));
             Preferences pref = new IniPreferences(ini).node(Constant.PathConstantString;
             
             String databaseName = 
@@ -95,7 +95,7 @@ public class DatabaseMappingMissingLevelDB implements DatabaseMappingMissingStra
     private Date getDate() throws UnknownHostException, IOException{
         NTPUDPClient timeClient = new NTPUDPClient();
         
-        InetAddress inetAddress = InetAddress.getByName(Constant.PathConstantString.TIME_SERVER_ADDRESS);
+        InetAddress inetAddress = InetAddress.getByName(Constant.PathConstant.TIME_SERVER_ADDRESS);
         TimeInfo timeInfo = timeClient.getTime(inetAddress);
         long returnTime = timeInfo.getReturnTime();
         

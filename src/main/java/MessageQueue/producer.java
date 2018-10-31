@@ -5,8 +5,8 @@
  */
 package MessageQueue;
 
-import Object.LogLogin;
-import java.io.IOException;
+import Exception.ConfigException;
+import Log.LogLogin;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -17,13 +17,16 @@ import org.apache.kafka.clients.producer.RecordMetadata;
  */
 public class producer {
 
-    public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-        WrapperProducer<LogLogin> wProducer = new WrapperProducer<>("123", WrapperProducer.class.toString(), Constant.PathConstantString.PATH_TO_CONSUMER_CONFIG_FILE);
+    public static void main(String[] args) throws ConfigException, InterruptedException, ExecutionException {
+        ProducerLogLogin producer = new ProducerLogLogin("LogLogin");
         //ProducerRecord record ;
 //        KafkaProducer producer = wProducer.getProducer();
 //        record = wProducer.makeProducerRecord("123");
 //        producer.send(record);
-        Future<RecordMetadata> f = wProducer.send(new LogLogin("123","345","37483"));
+//        LogPayment logLogin = new LogPayment("123","345","37483");
+//        Future<RecordMetadata> f = producerLogPayment.sendLog(logLogin);
+//        System.out.println(f.get());
+        Future<RecordMetadata> f = producer.send(new LogLogin("123","456","823"));
         System.out.println(f.get());
     }
 }

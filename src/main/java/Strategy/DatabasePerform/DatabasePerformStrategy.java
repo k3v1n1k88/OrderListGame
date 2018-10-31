@@ -5,8 +5,8 @@
  */
 package Strategy.DatabasePerform;
 
-import Object.LogLogin;
-import Object.LogPayment;
+import Log.LogLogin;
+import Log.LogPayment;
 
 /**
  *

@@ -17,21 +17,27 @@ public class DatabaseInfo {
     private String databaseName;
     private String userName;
     private String password;
+    
+    private static String DEFAULT_HOST = "localhost";
+    private static String DEFAULT_USER_NAME= "vng.default.user";
+    private static String DEFAULT_PASSWORD = "vng.default.password";
+    private static String DEFAULT_DATABASE_NAME = "vng.default.name";
+    private static int DEFAULT_PORT = 666;
 
     public DatabaseInfo(String databaseName){
-        this("localhost",0,databaseName);
+        this(DEFAULT_HOST,DEFAULT_PORT,databaseName);
     }
     
     public DatabaseInfo(String host,int port){
-        this(host,port,"default");
+        this(host,port,DEFAULT_DATABASE_NAME);
     }
     
     public DatabaseInfo(String hostAddress,int port, String databaseName){
         this(hostAddress,
                 port,
                 databaseName,
-                Constant.DBConstantString.DEFAULT_USERNAME,
-                Constant.DBConstantString.DEFAULT_PASSWORD);
+                DEFAULT_USER_NAME,
+                DEFAULT_PASSWORD);
     }
     public DatabaseInfo(String hostAddress, int port, String databaseName, String userName, String password) {
         this.hostAddress = hostAddress;

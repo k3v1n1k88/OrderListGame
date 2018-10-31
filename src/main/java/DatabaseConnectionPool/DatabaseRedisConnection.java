@@ -21,14 +21,16 @@ public class DatabaseRedisConnection implements DatabaseConnection{
     private static final Logger LOGGER = Logger.getLogger(DatabaseRedisConnection.class);
     
     private DatabaseInfo databaseInfo;
-    private final int connectionTimeout;
-    private final int soTimeout;
-    private final int database;
-    private final String clientName;
-    private final boolean ssl;
-    private final SSLSocketFactory sslSocketFactory;
-    private final SSLParameters sslParameters;
-    private final HostnameVerifier hostnameVerifier;
+    
+    private int database;
+    private boolean ssl;
+    private int connectionTimeout;
+    private int soTimeout;
+    private String clientName;
+    
+    SSLSocketFactory sslSocketFactory;
+    SSLParameters sslParameters;
+    HostnameVerifier hostnameVerifier;
     
     private Jedis connection;
     
@@ -37,11 +39,22 @@ public class DatabaseRedisConnection implements DatabaseConnection{
     }
     
     public DatabaseRedisConnection(DatabaseInfo databaseInfo){
-        this(databaseInfo,2000,2000,false,0,"admin",null,null,null);
+        this(databaseInfo,2000,2000,false,0,"admin");
     }
     
     public DatabaseRedisConnection(DatabaseInfo databaseInfo, int database){
-        this(databaseInfo,2000,2000,false,database,"admin",null,null,null);
+        this(databaseInfo,2000,2000,false,database,"admin");
+    }
+    
+    public DatabaseRedisConnection(DatabaseInfo databaseInfo,
+                                    int connectionTimeout,
+                                    int soTimeout,
+                                    boolean ssl,
+                                    int database,
+                                    String clientName){
+            
+        this(databaseInfo,connectionTimeout,soTimeout,ssl,database,clientName,null,null,null);
+        
     }
     
     public DatabaseRedisConnection(DatabaseInfo databaseInfo,
@@ -50,8 +63,8 @@ public class DatabaseRedisConnection implements DatabaseConnection{
                                     boolean ssl,
                                     int database,
                                     String clientName,
-                                    SSLSocketFactory sslSocketFactory,
-                                    SSLParameters sslParameters,
+                                    SSLSocketFactory sslSocketFactory, 
+                                    SSLParameters sslParameters, 
                                     HostnameVerifier hostnameVerifier){
         this.databaseInfo = databaseInfo;
         this.connectionTimeout = connectionTimeout;
@@ -59,14 +72,46 @@ public class DatabaseRedisConnection implements DatabaseConnection{
         this.ssl = ssl;
         this.database = database;
         this.clientName = clientName;
-        this.sslSocketFactory = sslSocketFactory;
-        this.sslParameters = sslParameters;
-        this.hostnameVerifier = hostnameVerifier;
+    }
+    
+    public DatabaseRedisConnection(String host, 
+                                    int port, 
+                                    String password, 
+                                    int connectionTimeout, 
+                                    int soTimeout, 
+                                    boolean ssl,
+                                    int database,
+                                    String clientName,
+                                    SSLSocketFactory sslSocketFactory, 
+                                    SSLParameters sslParameters, 
+                                    HostnameVerifier hostnameVerifier
+                                    ){
+        this(new DatabaseInfo(host,port,String.valueOf(database),clientName,password),
+                connectionTimeout,
+                soTimeout,
+                ssl,
+                database,
+                clientName,
+                sslSocketFactory,
+                sslParameters,
+                hostnameVerifier);
+    }
+    
+    public DatabaseRedisConnection(String host, 
+                                    int port, 
+                                    String password, 
+                                    int connectionTimeout, 
+                                    int soTimeout, 
+                                    boolean ssl,
+                                    int database,
+                                    String clientName
+                                    ){
+        this(host,port,password,connectionTimeout,soTimeout,ssl,database,clientName,null,null,null);
     }
 
 
     @Override
-    public void createConnection() throws Exception {
+    public void createConnection() throws JedisException {
         if (this.connection == null) {
             this.connection = new Jedis(this.databaseInfo.getHostAddress(),
                     this.databaseInfo.getPort(),
@@ -96,7 +141,7 @@ public class DatabaseRedisConnection implements DatabaseConnection{
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws JedisException {
         if(this.connection != null){
             this.connection.close();
         }
@@ -110,4 +155,7 @@ public class DatabaseRedisConnection implements DatabaseConnection{
         return this.connection;
     }
     
+    public void selectDatabase(int database){
+        this.connection.select(database);
+    }
 }

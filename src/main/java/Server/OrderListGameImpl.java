@@ -6,9 +6,9 @@
 package Server;
 
 import Exception.ParseLogException;
-import Object.LogLogin;
-import Object.LogPayment;
-import Object.RequestOrderList;
+import Log.LogLogin;
+import Log.LogPayment;
+import Log.RequestOrderList;
 import java.sql.SQLException;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;

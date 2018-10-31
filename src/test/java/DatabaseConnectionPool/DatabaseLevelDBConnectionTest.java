@@ -5,11 +5,13 @@
  */
 package DatabaseConnectionPool;
 
+import Exception.DatabaseException;
 import java.io.IOException;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.*;
 import static org.fusesource.leveldbjni.JniDBFactory.*;
 import java.io.*;
+import java.util.logging.Level;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,16 +48,20 @@ public class DatabaseLevelDBConnectionTest {
      * Test of makeConnection method, of class DatabaseLevelDBConnection.
      */
     @Test
-    public void testMakeConnection() throws IOException {
+    public void testConnectionPut() throws IOException {
         String databaseName = "test";
         String key = "abc";
         String value = "123";
         String res = "";
-        DatabaseLevelDBConnection dbvnn = new DatabaseLevelDBConnection(new DatabaseInfo(databaseName),new Options().createIfMissing(true));
-        dbvnn.createConnection();
+        DatabaseLevelDBConnection dbcnn = new DatabaseLevelDBConnection("test",true,false,400000000,1000,16,4096,-1,false,false,false);
+        try {
+            dbcnn.createConnection();
+        } catch (DatabaseException ex) {
+            fail("Expected success making a connetion, but cannot make it");
+        }
         DB db = null;
         try {
-            db = dbvnn.getConnection();
+            db = dbcnn.getConnection();
             assertFalse(db==null);
             db.put(bytes(key),bytes(value));
             res = asString(db.get(bytes(key)));
@@ -66,6 +72,38 @@ public class DatabaseLevelDBConnectionTest {
             fail("Fail when create connection");
             throw ex;
         }
+    }
+
+    /**
+     * Test of createConnection method, of class DatabaseLevelDBConnection.
+     */
+    @Test
+    public void testCreateConnection() throws IOException, Exception {
+        try {
+            System.out.println("createConnection");
+            DatabaseLevelDBConnection instance = new DatabaseLevelDBConnection("test");
+            instance.createConnection();
+            boolean res = instance.ping();
+            instance.close();
+            factory.destroy(new File("test"), new Options());
+            assertEquals(res,true);
+        } catch (DatabaseException ex) {
+            fail("Expected can make connection but cannot make it");
+        }
+    }
+
+    /**
+     * Test of getConnection method, of class DatabaseLevelDBConnection.
+     */
+    @Test
+    public void testGetConnection() throws Exception {
+    }
+
+    /**
+     * Test of ping method, of class DatabaseLevelDBConnection.
+     */
+    @Test
+    public void testPing() {
     }
     
 }

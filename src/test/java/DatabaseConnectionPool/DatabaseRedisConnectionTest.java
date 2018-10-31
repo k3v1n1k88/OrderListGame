@@ -6,6 +6,8 @@
 package DatabaseConnectionPool;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -58,16 +60,16 @@ public class DatabaseRedisConnectionTest {
     }
     
     @Test
-    public void testConnectionSet(){
+    public void testConnectionWithString(){
         try {
-            DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost",6379,"GameListOrder","root","nhakhoahoc"));
+            DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost", 6379, "GameListOrder", "root", "nhakhoahoc"));
             dbcnn.createConnection();
             Jedis jedis = dbcnn.getConnection();
+            jedis.ping();
             jedis.set("abc", "123");
             String res = jedis.get("abc");
-            assertEquals("Excpected a \"123\" but got \""+res+"\"",res,"123");
-            Long r = jedis.del("abc");
-            r= jedis.del("123");
+            assertEquals("123",res);
+            jedis.del("abc");
             dbcnn.close();
         } catch (Exception ex) {
             fail("Expected a connection but got a unvalid connection+\n"+ex);
@@ -75,15 +77,20 @@ public class DatabaseRedisConnectionTest {
     }
     
     @Test
-    public void testConnectionHSet(){
+    public void testConnectionWithHSet(){
         try {
-            DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost",6379,"GameListOrder","root","nhakhoahoc"));
+            DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost", 6379, "GameListOrder", "root", "nhakhoahoc"));
             dbcnn.createConnection();
             Jedis jedis = dbcnn.getConnection();
-            jedis.hset("abc", "123", "!@#");
-            jedis.hset("abc", "456", "$%^");
-            String res = jedis.hget("abc", "123");
-            assertEquals("Expected value \"!@#\" but got \""+res+"\"",res,"!@#");
+            jedis.hset("user#1", "name", "Peter");
+            jedis.hset("user#1", "job", "politician");
+
+            String name = jedis.hget("user#1", "name");
+            Map<String, String> fields = jedis.hgetAll("user#1");
+            String job = fields.get("job");
+            assertEquals("politician",job);
+            assertEquals("Peter",name);
+            jedis.del("user#1");
             dbcnn.close();
         } catch (Exception ex) {
             fail("Expected a connection but got a unvalid connection+\n"+ex);
@@ -95,15 +102,37 @@ public class DatabaseRedisConnectionTest {
      */
     @Test
     public void testClose(){
-        try {
-            DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost",6379,"GameListOrder","root","nhakhoahoc"));
-            dbcnn.createConnection();
-            dbcnn.close();
-            String res = dbcnn.getConnection().ping();
-            assertEquals("Expected a result not \"PONG\"",res,"PONG");
-        } catch (Exception ex) {
-            fail("Expected a connection but got a unvalid connection+\n"+Arrays.toString(ex.getStackTrace()));
-        }
+    }
+
+    /**
+     * Test of createConnection method, of class DatabaseRedisConnection.
+     */
+    @Test
+    public void testCreateConnection() throws Exception {
+    }
+
+    /**
+     * Test of getConnection method, of class DatabaseRedisConnection.
+     */
+    @Test
+    public void testGetConnection() {
+    }
+    
+    @Test
+    public void testSelectDatabase(){
+        DatabaseRedisConnection dbcnn = new DatabaseRedisConnection(new DatabaseInfo("localhost", 6379, "GameListOrder", "root", "nhakhoahoc"));
+        dbcnn.createConnection();
+        dbcnn.selectDatabase(0);
+        Jedis jedis = dbcnn.getConnection();
+        jedis.set("abc", "123");
+        String res = jedis.get("abc");
+        assertEquals("123", res);
+        jedis.select(1);
+        res = jedis.get("abc");
+        assertFalse("123".equals(res));
+        jedis.select(0);
+        jedis.del("abc");
+        dbcnn.close();
     }
 
 }

@@ -6,95 +6,132 @@
 package DatabaseConnectionPool;
 
 import Configuration.ConfigConnectionPool;
-import Constant.PoolConstantString;
-import Constant.PathConstantString;
-import java.io.IOException;
+import Configuration.ConfigDatabaseRedis;
+import Constant.PathConstant;
+import Exception.ConfigException;
+import Exception.PoolException;
+import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.Jedis;
+import org.apache.log4j.Logger;
 import redis.clients.util.Pool;
 
 /**
  *
  * @author root
  */
-public class DatabaseConnectionPoolRedis extends Pool<Jedis> implements DatabaseConnectionPool{
+public class DatabaseConnectionPoolRedis extends Pool<DatabaseRedisConnection> implements DatabaseConnectionPool<DatabaseRedisConnection>{
    
-    private GenericObjectPool pool;
-        
-    public DatabaseConnectionPoolRedis(DatabaseRedisConnectionFactory factory) throws IOException{
-        this(factory,new GenericObjectPoolConfig(),new AbandonedConfig());
-    }
+    private static final Logger logger =Logger.getLogger(DatabaseConnectionPoolRedis.class);
     
-    public DatabaseConnectionPoolRedis(DatabaseRedisConnectionFactory factory, GenericObjectPoolConfig config, AbandonedConfig abandonedConfig) throws IOException{
+    private ConfigConnectionPool config;
         
-        this.pool = new GenericObjectPool<DatabaseRedisConnection>(factory,config,abandonedConfig);
+    public DatabaseConnectionPoolRedis(DatabaseRedisConnectionFactory factory, ConfigConnectionPool config) throws ConfigException{
         
-        ConfigConnectionPool conf = ConfigConnectionPool.getInstance(PathConstantString.PATH_TO_POOL_CONFIG_FILE);
+        this.internalPool = new GenericObjectPool<>(factory);
         
-        this.pool.setBlockWhenExhausted(conf.getBooleanParam(PoolConstantString.BLOCK_WHEN_EXHAUSTED));
+        if(config == null){
+            logger.error("Config is null");
+            throw new ConfigException("config must have not null");
+        }
         
-        this.pool.setLifo(conf.getBooleanParam(PoolConstantString.RETURN_POLICY));
+        this.config = config;
         
-        this.pool.setMaxIdle(conf.getIntParam(PoolConstantString.MAX_IDLE));
+        this.internalPool.setBlockWhenExhausted(this.config.isBlockWhenExhausted());
         
-        this.pool.setMaxTotal(conf.getIntParam(PoolConstantString.MAX_TOTAL));
+        this.internalPool.setLifo(this.config.isLifo());
         
-        this.pool.setMaxWaitMillis(conf.getLongParam(PoolConstantString.MAX_WAIT_MILLIS));
+        this.internalPool.setMaxIdle(this.config.getMaxIdle());
         
-        this.pool.setMinIdle(conf.getIntParam(PoolConstantString.MIN_IDLE));
+        this.internalPool.setMaxTotal(this.config.getMaxTotal());
         
-        this.pool.setMinEvictableIdleTimeMillis(conf.getLongParam(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS));
+        this.internalPool.setMaxWaitMillis(this.config.getMaxWaitMillis());
         
-        this.pool.setNumTestsPerEvictionRun(conf.getIntParam(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN));
+        this.internalPool.setMinIdle(this.config.getMinIdle());
         
-        this.pool.setSoftMinEvictableIdleTimeMillis(conf.getLongParam(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS));
+        this.internalPool.setMinEvictableIdleTimeMillis(this.config.getMinEvictableIdleTimeMillis());
         
-        this.pool.setTestOnBorrow(conf.getBooleanParam(PoolConstantString.TEST_ON_BORROW));
+        this.internalPool.setNumTestsPerEvictionRun(this.config.getNumTestsPerEvictionRun());
         
-        this.pool.setTestOnReturn(conf.getBooleanParam(PoolConstantString.TEST_ON_RETURN));
+        this.internalPool.setSoftMinEvictableIdleTimeMillis(this.config.getSoftMinEvictableIdleTimeMillis());
         
-        this.pool.setTestWhileIdle(conf.getBooleanParam(PoolConstantString.TEST_WHILE_IDLE));
+        this.internalPool.setTestOnBorrow(this.config.isTestOnBorrow());
         
-        this.pool.setTimeBetweenEvictionRunsMillis(conf.getLongParam(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS));     
+        this.internalPool.setTestOnReturn(this.config.isTestOnReturn());
+        
+        this.internalPool.setTestWhileIdle(this.config.isTestWhileIdle());
+        
+        this.internalPool.setTimeBetweenEvictionRunsMillis(this.config.getTimeBetweenEvictionRunsMillis());     
     } 
     
+    public DatabaseConnectionPoolRedis(DatabaseRedisConnectionFactory factory) throws ConfigException{
+        this(factory,new ConfigConnectionPool());
+    }
+
+    public ConfigConnectionPool getConfig() {
+        return config;
+    }
+    
     @Override
-    public Object borrowObject() throws Exception {
-        return this.pool.borrowObject();
+    public DatabaseRedisConnection borrowObjectFromPool() throws PoolException{
+        try{
+            return this.getResource();
+        }catch(Exception e){
+            throw new PoolException("Cannot get object from pool",e);
+        }
     }
 
     @Override
-    public void returnObject(Object obj) {
-        this.pool.returnObject(obj);
+    public void returnObjectToPool(DatabaseRedisConnection resource) throws PoolException{
+        if(resource != null){
+            try{
+                resource.getConnection().resetState();
+                this.internalPool.returnObject(resource);
+            }catch(Exception e){
+                invalidateObjectOfPool(resource);
+                throw new PoolException("Cannot return reosurce to Jedis pool",e);
+            }
+        }
     }
 
     @Override
-    public void invalidateObject(Object obj) throws Exception {
-        this.pool.invalidateObject(obj);
+    public void invalidateObjectOfPool(DatabaseRedisConnection obj) throws PoolException {
+        try {
+            this.internalPool.invalidateObject(obj);
+        } catch (Exception e) {
+            throw new PoolException("Cannot invalidate object from poll",e);
+        }
     }
 
     @Override
-    public void close() {
-        if(this.pool != null)
-            this.pool.close();
+    public void closePool() throws PoolException {
+        try {
+            this.internalPool.close();
+        } catch (Exception e) {
+            throw new PoolException("Could not close the pool", e);
+        }
     }
 
     @Override
-    public void clear() {
-        this.pool.clear();
+    public void clearPool() {
+        this.internalPool.clear();
     }
-
-    @Override
-    public boolean isClosed() {
-        return this.pool.isClosed();
+    
+    public int getNumsObjectWaiter(){
+        return this.getNumWaiters();
     }
-
+    
+    public int getNumsObjectIdle(){
+        return this.getNumIdle();
+    }
+    
+    public int getNumsObjectActive(){
+        return this.getNumActive();
+    }
+    
     @Override
-    public Set<Object> listAllObject() {
-        return this.pool.listAllObjects();
+    public boolean isClosedPool() {
+        return this.internalPool.isClosed();
     }
 
 }

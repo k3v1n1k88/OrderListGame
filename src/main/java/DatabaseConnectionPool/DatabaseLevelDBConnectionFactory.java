@@ -5,11 +5,12 @@
  */
 package DatabaseConnectionPool;
 
-import org.apache.commons.pool2.BasePooledObjectFactory;
+import Configuration.ConfigDatabaseLevelDB;
+import Exception.ConfigException;
+import Exception.DatabaseException;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.iq80.leveldb.Options;
 
 /**
  *
@@ -17,33 +18,44 @@ import org.iq80.leveldb.Options;
  */
 public class DatabaseLevelDBConnectionFactory implements PooledObjectFactory<DatabaseLevelDBConnection>{
 
-    public DatabaseInfo databaseInfo;
-    public Options option;
+    private String databaseName;
     
-    public DatabaseLevelDBConnectionFactory(String databaseName){
-        this(new DatabaseInfo(databaseName));
+    private ConfigDatabaseLevelDB config;
+    
+    public DatabaseLevelDBConnectionFactory(String databaseName, String pathDatabaseConfig) throws ConfigException{
+        config = new ConfigDatabaseLevelDB(pathDatabaseConfig);
+        this.databaseName = databaseName;
     }
     
-    public DatabaseLevelDBConnectionFactory(DatabaseInfo databaseInfo){
-        this(databaseInfo,new Options().createIfMissing(true));
+    public DatabaseLevelDBConnectionFactory(String databaseName) throws ConfigException{
+        this(databaseName, Constant.PathConstant.PATH_TO_DATABASE_LEVELDB_CONFIG_FILE);
     }
     
-    public DatabaseLevelDBConnectionFactory(DatabaseInfo databaseInfo,Options option){
-        this.databaseInfo = databaseInfo;
-        this.option = option;
+    
+    public String getDatabaseName() {
+        return databaseName;
     }
 
-    public DatabaseInfo getDatabaseInfo() {
-        return this.databaseInfo;
+    public ConfigDatabaseLevelDB getConfig() {
+        return config;
     }
-
-    public Options getOption() {
-        return this.option;
-    } 
+    
+    
 
     @Override
-    public PooledObject<DatabaseLevelDBConnection> makeObject() throws Exception {
-        DatabaseLevelDBConnection dbcnn = new DatabaseLevelDBConnection(this.databaseInfo,this.option);
+    public PooledObject<DatabaseLevelDBConnection> makeObject() throws DatabaseException {
+        DatabaseLevelDBConnection dbcnn = new DatabaseLevelDBConnection(this.databaseName,
+                                                        this.config.isCreateIfMissing(),
+                                                        this.config.isErrorIfExists(),
+                                                        this.config.getWriteBufferSize(),
+                                                        this.config.getMaxOpenFiles(),
+                                                        this.config.getBlockRestartInterval(),
+                                                        this.config.getBlockSize(),
+                                                        this.config.getCacheSize(),
+                                                        this.config.isCompression(),
+                                                        this.config.isVerifyChecksums(),
+                                                        this.config.isParanoidChecks()
+                                                        );
         dbcnn.createConnection();
         return new DefaultPooledObject<DatabaseLevelDBConnection>(dbcnn);
     }
@@ -51,7 +63,9 @@ public class DatabaseLevelDBConnectionFactory implements PooledObjectFactory<Dat
     @Override
     public void destroyObject(PooledObject<DatabaseLevelDBConnection> pooledMySQL) throws Exception {
         DatabaseLevelDBConnection dbcnn = pooledMySQL.getObject();
-        dbcnn.close();
+        if(dbcnn!= null){
+            dbcnn.close();
+        }
     }
     @Override
     public boolean validateObject(PooledObject<DatabaseLevelDBConnection> pooledMySQL) {

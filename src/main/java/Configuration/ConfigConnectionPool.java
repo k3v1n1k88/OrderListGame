@@ -6,128 +6,184 @@
 package Configuration;
 
 import Constant.PoolConstantString;
-import Constant.PathConstantString;
-import com.sun.istack.internal.logging.Logger;
-import java.io.File;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.prefs.Preferences;
-import org.ini4j.Ini;
-import org.ini4j.IniPreferences;
-import scala.collection.mutable.HashTable;
+import Exception.ConfigException;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author root
  */
-public class ConfigConnectionPool {
+public class ConfigConnectionPool extends ConfigurationAbstract{
 
     private static final long serialVersionUID = 498594584985L;
+    
     private static final Logger LOGGER = Logger.getLogger(ConfigConnectionPool.class);
     
-    private static Hashtable holderConfig = null;
-    
-    private Properties config = null;
+    private boolean blockWhenExhausted ;
+    private long evictorShutdownTimeoutMillis ;
+    private boolean fairness ;
+    private long maxWaitMillis ;             
+    private long minEvictableIdleTimeMillis ;
+    private int maxTotal ;
+    private int maxIdle ;
+    private int minIdle;
+    private int maxTotalPerKey ;
+    private int minIdlePerKey ;
+    private int maxIdlePerKey ;
+    private int numTestsPerEvictionRun ;
+    private long softMinEvictableIdleTimeMillis ;
+    private boolean testOnCreate ;
+    private boolean testOnBorrow ;
+    private boolean testOnReturn ;
+    private boolean testWhileIdle ;
+    private long timeBetweenEvictionRunsMillis ;
+    private boolean lifo ;
 
     
-    private ConfigConnectionPool(String path) throws IOException{
-        try {
-            Ini ini = new Ini(new File(path));
-            Preferences pref = new IniPreferences(ini).node(PoolConstantString.CONNECTION_POOL);
+    public ConfigConnectionPool(String path) throws ConfigException{
+        
+        super(path,PoolConstantString.CONNECTION_POOL);
+        
+        this.blockWhenExhausted = this.prefs.getBoolean(PoolConstantString.BLOCK_WHEN_EXHAUSTED, DEFAULT_BLOCK_WHEN_EXHAUSTED);
+        this.evictorShutdownTimeoutMillis = this.prefs.getLong(PoolConstantString.EVICTOR_SHUTDOWN_TIMEOUT_MILLIS, DEFAULT_EVICTOR_SHUTDOWN_TIMEOUT_MILLIS);
+        this.fairness = this.prefs.getBoolean(PoolConstantString.FAIRNESS, DEFAULT_FAIRNESS);
+        this.maxWaitMillis = this.prefs.getLong(PoolConstantString.MAX_WAIT_MILLIS, DEFAULT_MAX_WAIT_MILLIS);
+        this.minEvictableIdleTimeMillis = this.prefs.getLong(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS, DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+        this.maxTotal = this.prefs.getInt(PoolConstantString.MAX_TOTAL, DEFAULT_MAX_TOTAL);
+        this.maxIdle = this.prefs.getInt(PoolConstantString.MAX_IDLE, DEFAULT_MAX_IDLE);
+        this.minIdle = this.prefs.getInt(PoolConstantString.MIN_IDLE, DEFAULT_MIN_IDLE);
+        this.maxTotalPerKey = this.prefs.getInt(PoolConstantString.MAX_TOTAL_PER_KEY, DEFAULT_MAX_TOTAL_PER_KEY);
+        this.minIdlePerKey = this.prefs.getInt(PoolConstantString.MIN_IDLE_PER_KEY, DEFAULT_MIN_IDLE_PER_KEY);
+        this.maxIdlePerKey= this.prefs.getInt(PoolConstantString.MAX_IDLE_PER_KEY, DEFAULT_MAX_IDLE_PER_KEY);
+        this.numTestsPerEvictionRun = this.prefs.getInt(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN, DEFAULT_NUM_TESTS_PER_EVICTION_RUN);
+        this.softMinEvictableIdleTimeMillis = this.prefs.getLong(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS, DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS);
+        this.testOnCreate = this.prefs.getBoolean(PoolConstantString.TEST_ON_CREATE, DEFAULT_TEST_ON_CREATE);
+        this.testOnBorrow = this.prefs.getBoolean(PoolConstantString.TEST_ON_BORROW, DEFAULT_TEST_ON_BORROW);
+        this.testOnReturn = this.prefs.getBoolean(PoolConstantString.TEST_ON_RETURN, DEFAULT_TEST_ON_RETURN);
+        this.testWhileIdle = this.prefs.getBoolean(PoolConstantString.TEST_WHILE_IDLE, DEFAULT_TEST_WHILE_IDLE);
+        this.timeBetweenEvictionRunsMillis = this.prefs.getLong(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS, DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
+        this.lifo = this.prefs.getBoolean(PoolConstantString.RETURN_POLICY, DEFAULT_RETURN_POLICY);
+        
+        System.out.println("Pool connection configuration:"
+                + "\nblockWhenExhausted: " + this.blockWhenExhausted
+                + "\nevictorShutdownTimeoutMillis:" + this.evictorShutdownTimeoutMillis
+                + "\nfairness: " + this.fairness
+                + "\nmaxWaitMillis: " + this.maxWaitMillis
+                + "\nminEvictableIdleTimeMillis: " + this.minEvictableIdleTimeMillis
+                + "\nmaxTotal: " + this.maxTotal
+                + "\nmaxIdle: " + this.maxIdle
+                + "\nminIdle: " + this.minIdle
+                + "\nmaxTotalPerKey: " + this.maxTotalPerKey
+                + "\nminIdlePerKey: " + this.minIdlePerKey
+                + "\nmaxIdlePerKey: " + this.maxIdlePerKey
+                + "\nnumTestsPerEvictionRun: " + this.numTestsPerEvictionRun
+                + "\nsoftMinEvictableIdleTimeMillis: " + this.softMinEvictableIdleTimeMillis
+                + "\ntestOnCreate: " + this.testOnCreate
+                + "\ntestOnBorrow: " + this.testOnBorrow
+                + "\ntestOnReturn: " + this.testOnReturn
+                + "\ntestWhileIdle: " + this.testWhileIdle
+                + "\ntimeBetweenEvictionRunsMillis: " + this.timeBetweenEvictionRunsMillis
+                + "\nreturnPolicy: " + this.lifo);
+    }
 
-            this.config = new Properties();
-            
-            this.config.put(PoolConstantString.BLOCK_WHEN_EXHAUSTED, pref.getBoolean(PoolConstantString.BLOCK_WHEN_EXHAUSTED, true));
-            this.config.put(PoolConstantString.EVICTOR_SHUTDOWN_TIMEOUT_MILLIS, pref.getLong(PoolConstantString.EVICTOR_SHUTDOWN_TIMEOUT_MILLIS, 10000));
-            this.config.put(PoolConstantString.FAIRNESS, pref.getBoolean(PoolConstantString.FAIRNESS, false));
-            this.config.put(PoolConstantString.MAX_WAIT_MILLIS, pref.getLong(PoolConstantString.MAX_WAIT_MILLIS, -1L));
-            this.config.put(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS, pref.getLong(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS, 1800000L));
-            this.config.put(PoolConstantString.MAX_TOTAL, pref.getInt(PoolConstantString.MAX_TOTAL, 100));
-            this.config.put(PoolConstantString.MAX_IDLE, pref.getInt(PoolConstantString.MAX_IDLE, 8));
-            this.config.put(PoolConstantString.MIN_IDLE, pref.getInt(PoolConstantString.MIN_IDLE, 2));
-            this.config.put(PoolConstantString.MAX_TOTAL_PER_KEY, pref.getInt(PoolConstantString.MAX_TOTAL_PER_KEY, 8));
-            this.config.put(PoolConstantString.MIN_IDLE_PER_KEY, pref.getInt(PoolConstantString.MIN_IDLE_PER_KEY, 0));
-            this.config.put(PoolConstantString.MAX_IDLE_PER_KEY, pref.getInt(PoolConstantString.MAX_IDLE_PER_KEY, 8));
-            this.config.put(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN, pref.getInt(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN, 3));
-            this.config.put(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS, pref.getLong(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS, -1L));
-            this.config.put(PoolConstantString.TEST_ON_CREATE, pref.getBoolean(PoolConstantString.TEST_ON_CREATE, false));
-            this.config.put(PoolConstantString.TEST_ON_BORROW, pref.getBoolean(PoolConstantString.TEST_ON_BORROW, false));
-            this.config.put(PoolConstantString.TEST_ON_RETURN, pref.getBoolean(PoolConstantString.TEST_ON_RETURN, false));
-            this.config.put(PoolConstantString.TEST_WHILE_IDLE, pref.getBoolean(PoolConstantString.TEST_WHILE_IDLE, false));
-            this.config.put(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS, pref.getLong(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS, -1));
-            this.config.put(PoolConstantString.RETURN_POLICY, pref.getBoolean(PoolConstantString.RETURN_POLICY, true));
-            
-        } catch (IOException ex) {
-            LOGGER.info("Cannot find file in: "+path);
-            throw ex;
-        }
+    public ConfigConnectionPool() throws ConfigException {
+        this(Constant.PathConstant.PATH_TO_POOL_CONFIG_FILE);
     }
+
+    public boolean isBlockWhenExhausted() {
+        return blockWhenExhausted;
+    }
+
+    public long getEvictorShutdownTimeoutMillis() {
+        return evictorShutdownTimeoutMillis;
+    }
+
+    public boolean isFairness() {
+        return fairness;
+    }
+
+    public long getMaxWaitMillis() {
+        return maxWaitMillis;
+    }
+
+    public long getMinEvictableIdleTimeMillis() {
+        return minEvictableIdleTimeMillis;
+    }
+
+    public int getMaxTotal() {
+        return maxTotal;
+    }
+
+    public int getMaxIdle() {
+        return maxIdle;
+    }
+
+    public int getMinIdle() {
+        return minIdle;
+    }
+
+    public int getMaxTotalPerKey() {
+        return maxTotalPerKey;
+    }
+
+    public int getMinIdlePerKey() {
+        return minIdlePerKey;
+    }
+
+    public int getMaxIdlePerKey() {
+        return maxIdlePerKey;
+    }
+
+    public int getNumTestsPerEvictionRun() {
+        return numTestsPerEvictionRun;
+    }
+
+    public long getSoftMinEvictableIdleTimeMillis() {
+        return softMinEvictableIdleTimeMillis;
+    }
+
+    public boolean isTestOnCreate() {
+        return testOnCreate;
+    }
+
+    public boolean isTestOnBorrow() {
+        return testOnBorrow;
+    }
+
+    public boolean isTestOnReturn() {
+        return testOnReturn;
+    }
+
+    public boolean isTestWhileIdle() {
+        return testWhileIdle;
+    }
+
+    public long getTimeBetweenEvictionRunsMillis() {
+        return timeBetweenEvictionRunsMillis;
+    }
+
+    public boolean isLifo() {
+        return lifo;
+    }   
     
-    public static ConfigConnectionPool getInstance(String path) throws IOException{
-        if(ConfigConnectionPool.holderConfig == null){
-            synchronized(ConfigConnectionPool.class){
-                ConfigConnectionPool.holderConfig = new Hashtable();
-            }
-        }
-        if (!holderConfig.contains(path)) {
-            synchronized (ConfigConnectionPool.class) {
-                ConfigConnectionPool.holderConfig.put(path, new ConfigConnectionPool(path));
-            }
-        }
-        
-        ConfigConnectionPool config = (ConfigConnectionPool) ConfigConnectionPool.holderConfig.get(path);
-        LOGGER.info("Pool connection configuration:"
-                +"\nblock_when_exhausted: "+config.getConfig().get(PoolConstantString.BLOCK_WHEN_EXHAUSTED)
-                +"\nevictor_shutdown_timeout_millis:"+config.getConfig().get(PoolConstantString.EVICTOR_SHUTDOWN_TIMEOUT_MILLIS)
-                +"\nfairness: "+config.getConfig().get(PoolConstantString.FAIRNESS)
-                +"\nmax_wait_millis: "+config.getConfig().get(PoolConstantString.MAX_WAIT_MILLIS)
-                +"\nmin_evictable_idle_time_millis: "+config.getConfig().get(PoolConstantString.MIN_EVICTABLE_IDLE_TIME_MILLIS)
-                +"\nmax_total: "+config.getConfig().get(PoolConstantString.MAX_TOTAL)
-                +"\nmax_idle: "+config.getConfig().get(PoolConstantString.MAX_IDLE)
-                +"\nmin_idle: "+config.getConfig().get(PoolConstantString.MIN_IDLE)
-                +"\nmax_total_per_key: "+config.getConfig().get(PoolConstantString.MAX_TOTAL_PER_KEY)
-                +"\nmin_idle_per_key: "+config.getConfig().get(PoolConstantString.MIN_IDLE_PER_KEY)
-                +"\nmax_idle_per_key: "+config.getConfig().get(PoolConstantString.MAX_IDLE_PER_KEY)
-                +"\nnum_tests_per_eviction_run: "+config.getConfig().get(PoolConstantString.NUM_TESTS_PER_EVICTION_RUN)
-                +"\nsoft_min_evictable_idle_time_millis: "+config.getConfig().getProperty(PoolConstantString.SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS)
-                +"\ntest_on_create: "+config.getConfig().get(PoolConstantString.TEST_ON_CREATE)
-                +"\ntest_on_borrow: "+config.getConfig().get(PoolConstantString.TEST_ON_BORROW)
-                +"\ntest_on_return: "+config.getConfig().get(PoolConstantString.TEST_ON_RETURN)
-                +"\ntest_while_idle: "+config.getConfig().get(PoolConstantString.TEST_WHILE_IDLE)
-                +"\ntime_between_eviction_runs_millis: "+config.getConfig().get(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS)
-                +"\nreturn_policy: "+config.getConfig().get(PoolConstantString.RETURN_POLICY));
-        
-        return config;
-    }
+    private static boolean DEFAULT_BLOCK_WHEN_EXHAUSTED =  true;
+    private static long DEFAULT_EVICTOR_SHUTDOWN_TIMEOUT_MILLIS = 10000L;
+    private static boolean DEFAULT_FAIRNESS = false;
+    private static long DEFAULT_MAX_WAIT_MILLIS = -1L;             
+    private static long DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS = 1800000L;
+    private static int DEFAULT_MAX_TOTAL = 100;
+    private static int DEFAULT_MAX_IDLE = 8;
+    private static int DEFAULT_MIN_IDLE =2;
+    private static int DEFAULT_MAX_TOTAL_PER_KEY = 8;
+    private static int DEFAULT_MIN_IDLE_PER_KEY = 0;
+    private static int DEFAULT_MAX_IDLE_PER_KEY = 8;
+    private static int DEFAULT_NUM_TESTS_PER_EVICTION_RUN = 3;
+    private static long DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS = -1;
+    private static boolean DEFAULT_TEST_ON_CREATE = false;
+    private static boolean DEFAULT_TEST_ON_BORROW = false;
+    private static boolean DEFAULT_TEST_ON_RETURN = false;
+    private static boolean DEFAULT_TEST_WHILE_IDLE = false;
+    private static long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1;
+    private static boolean DEFAULT_RETURN_POLICY = true;
     
-    public Long getLongParam(String param){
-        Long res = (Long)this.config.get(param);
-        return res;
-    }
-    
-    public Integer getIntParam(String param){
-        Integer res = (Integer) this.config.get(param);
-        return res;
-    }
-    
-    public String getStringParam(String param){
-        String res = (String) this.config.get(param);
-        return res;
-    }
-    
-    public Boolean getBooleanParam(String param){
-        try {
-            Boolean res = Boolean.parseBoolean(String.valueOf(this.config.get(param)));
-            return res;
-        } catch (NumberFormatException e){
-            LOGGER.info("Cast bay roi em oi");
-            throw e;
-        }
-    }
-          
-    public Properties getConfig(){
-        return this.config;
-    } 
 }
