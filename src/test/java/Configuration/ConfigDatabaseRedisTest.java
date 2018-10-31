@@ -52,7 +52,7 @@ public class ConfigDatabaseRedisTest {
     public void testReadParamFromConfigFile(){
         try {
             ConfigDatabaseRedis config = new ConfigDatabaseRedis(Constant.PathConstant.PATH_TO_DATABASE_REDIS_CONFIG_FILE);
-            assertEquals(config.getHost(),"127.0.0.2");
+            assertEquals(config.getHost(),"127.0.0.1");
             assertEquals(config.getPort(),6379);
             assertEquals(config.getPassword(),"nhakhoahoc");
             assertEquals(config.getConnectionTimeoutMillius(),2000);

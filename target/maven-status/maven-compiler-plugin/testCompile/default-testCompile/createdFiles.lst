@@ -1,0 +1,11 @@
+Task/WorkerLogPaymentTest.class
+DatabaseConnectionPool/DatabaseConnectionPoolRedisTest.class
+object/value/database/MappingValueWrapperTest.class
+Cache/CacheLandingPageTest.class
+Task/WorkerLogLoginTest.class
+DatabaseConnectionPool/DatabaseLevelDBConnectionTest.class
+DatabaseConnectionPool/DatabaseRedisConnectionTest.class
+object/value/database/ScoreValueWrapperTest.class
+DatabaseConnectionPool/DatabaseConnectionPoolLevelDBTest.class
+Configuration/ConfigDatabaseRedisTest.class
+Configuration/ConfigConnectionPoolTest.class

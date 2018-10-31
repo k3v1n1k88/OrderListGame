@@ -126,6 +126,37 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-dependency-plugin</artifactId>
+               <version>3.0.2</version>
+               <executions>
+                   <execution>
+                       <id>copy-dependencies</id>
+                       <phase>package</phase>
+                       <goals>
+                           <goal>copy-dependencies</goal>
+                       </goals>
+                       <configuration>
+                           <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                       </configuration>
+                   </execution>
+               </executions>
+           </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <version>3.1.0</version>
+               <configuration>
+                   <archive>
+                       <manifest>
+                           <addClasspath>true</addClasspath>
+                           <classpathPrefix>lib/</classpathPrefix>
+                           <mainClass>Bussiness.ServiceDaemon</mainClass>
+                       </manifest>
+                   </archive>
+               </configuration>
+           </plugin>
         </plugins>
     </build>
     <name>ListOrderGame</name>
