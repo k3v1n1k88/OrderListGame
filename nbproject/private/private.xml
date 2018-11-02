@@ -3,7 +3,32 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/zserver/java-projects/OrderedListGame/test/DatabaseConnectionPool/DatabaseConnectionPoolLevelDBTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Bussiness/ServiceDaemon.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/zscribeUPool.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Constant/DBConstantString.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/conf/log4j.properties</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/LogEntry.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/DatabaseConnectionPool/DatabaseConnectionPoolRedisTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Constant/PathConstant.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/DatabaseConnectionPool/DatabaseMySQLConnectionTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/conf/production.config.ini</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/DatabaseConnectionPool/DatabaseRedisConnectionFactory.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/Configuration/ConfigConnectionPoolTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/DatabaseConnectionPool/DatabaseRedisConnectionTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/com/facebook/fb303/FacebookServiceUPool.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Configuration/ConfigDatabaseRedis.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/Configuration/ConfigDatabaseRedisTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/zscribe.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/scribeUPool.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Configuration/ConfigurationAbstract.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/scribe.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/com/facebook/fb303/fb_status.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/scribe/thrift/ResultCode.java</file>
             <file>file:/zserver/java-projects/OrderedListGame/src/orderedlistgame/OrderedListGame.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/gen-java/com/facebook/fb303/FacebookService.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/DatabaseConnectionPool/DatabaseConnectionPoolMySQLTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/Configuration/ConfigConsumer.java</file>
         </group>
     </open-files>
 </project-private>
