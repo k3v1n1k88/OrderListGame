@@ -10,6 +10,8 @@ import api.ApiServlet;
 import cache.CacheLandingPage;
 import configuration.ConfigProducer;
 import exception.ConfigException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import object.log.LogLandingPage;
 import message.queue.ProducerLogLandingPage;
 import javax.servlet.http.HttpServletRequest;
@@ -52,12 +54,14 @@ public class LandingPageController extends ApiServlet{
         LogLandingPage logLandingPage = new LogLandingPage(session);
         
         try {
+            listGame = cache.getList(session);
             ProducerLogLandingPage prod = new ProducerLogLandingPage(constant.KafkaConstantString.TOPIC_LANDING_PAGE,LandingPageController.configProducer);
             prod.sendLog(logLandingPage);
-            listGame = cache.getList(session);
         } catch (ConfigException ex) {
             logger.error(ex.getMessage());
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, "System happened error when setting up");
+        } catch (ExecutionException ex) {
+            logger.error("");
         } catch(Exception ex){
             logger.error(ex.getMessage());
             return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");

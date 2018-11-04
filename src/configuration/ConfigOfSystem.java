@@ -78,6 +78,16 @@ public class ConfigOfSystem extends ConfigurationAbstract{
     public double getBaseOfPower() {
         return baseOfPower;
     }
+
+    public int getLimitScoringGame() {
+        return limitScoringGame;
+    }
+
+    public int getLimitRecommendationGame() {
+        return limitRecommendationGame;
+    }
+    
+    
     
     private static final long DEFAULT_UNIT_TIME = 604800;
     

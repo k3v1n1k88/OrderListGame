@@ -49,12 +49,22 @@ public class CacheLandingPage {
     private static DatabaseConnectionPoolRedis pool;
     private static ConfigOfSystem configSystem;
     
+    /** 
+    * Because, database recommendation cannot overload when get list from session continuously
+    * So, we create this cache. 
+    * It will auto-update after default duration 
+    * configured at {@link CacheListRecommendationGame#DEFAULT_REFRESH_TIME}
+    * {@link CacheListRecommendationGame#DEFAULT_EXPIRE_TIME}
+    */
+    private static CacheListRecommendationGame cacheRecommendationGameList;
+    
     static{
         try {
             ConfigConnectionPool config = new ConfigConnectionPool();
             DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
             pool = new DatabaseConnectionPoolRedis(factory,config);
             configSystem = new ConfigOfSystem();
+            cacheRecommendationGameList = new CacheListRecommendationGame(configSystem.getLimitRecommendationGame());
         } catch (ConfigException ex) {
             System.out.println(ex.getMessage());
             logger.info(ex.getMessage());
@@ -62,7 +72,7 @@ public class CacheLandingPage {
         }
     }
     
-    private LoadingCache<String,ListGame> cache;
+    private LoadingCache<String,ListGame> cacheLandingPage;
     private ConfigCache configCache;
     
     public CacheLandingPage(ConfigCache config){
@@ -90,7 +100,7 @@ public class CacheLandingPage {
         };
         
         // Initalize cache
-        cache = CacheBuilder.newBuilder()
+        cacheLandingPage = CacheBuilder.newBuilder()
                 .maximumSize(configCache.getMaximumSize())
                 .expireAfterWrite(configCache.getExpireAfterWrite(), TimeUnit.SECONDS)
                 .refreshAfterWrite(configCache.getRefreshAfterWrite(), TimeUnit.SECONDS)
@@ -104,7 +114,7 @@ public class CacheLandingPage {
     
     public ListGame getList(String session) throws ExecutionException{
         try{
-            return this.cache.get(session);
+            return this.cacheLandingPage.get(session);
         } catch (ExecutionException ex) {
             logger.error(ex);
             throw ex;
@@ -164,54 +174,101 @@ public class CacheLandingPage {
                     sorted(comparator).
                     collect(Collectors.toList());
 
-            // Get list Recommendation game
-            jedis.select(constant.DBConstantString.DATABASE_RECOMMENDATION_INDEX);
-            listGameIDRecommendation = jedis.sort(constant.DBConstantString.LIST_GAME, new SortingParams().
-                    by(constant.DBConstantString.GAME_ID + ":*->".concat(constant.DBConstantString.POINT))
-            );
+            // Get list Recommendation game from cache
+            listGameIDRecommendation = CacheLandingPage.cacheRecommendationGameList.get();
 
             // Init list game
             retListGame = new CacheLandingPage.ListGame();
             retListGame.setScoringList(listGameIDScoring);
-            retListGame.setScoringList(listGameIDScoring);
+            retListGame.setRecommandatioList(listGameIDRecommendation);
 
             return retListGame;
         } catch (PoolException ex) {
             logger.error(ex.getMessage());
             throw ex;
+        } catch (ExecutionException ex) {
+            logger.error(ex.getMessage());
         } finally {
             if (dbcnn != null) {
                 pool.returnObjectToPool(dbcnn);
             }
         }
+        return null;
     }
     
-    //    public static class CacheListRecommendationGame{
-//        private static List<String> listGameID = null;
-//        
-//        public static List<String> getList() throws PoolException{
-//            if(listGameID == null){
-//                synchronized(CacheListRecommendationGame.class){
-//                    try {
-//                        DatabaseRedisConnection dbcnn = pool.borrowObjectFromPool();
-//                        Jedis jedis = dbcnn.getConnection();
-//                        jedis.select(Constant.DBConstantString.DATABASE_RECOMMENDATION_INDEX);
-//                        
-//                        Set<String> redisKeys = jedis.keys("samplekey*");
-//                        Iterator<String> it = redisKeys.iterator();
-//                        TreeMap<String,String> treeMap = new TreeMap<>();
-//                        Comparator<Map.Entry<String,String>> comp = new Comparator<>();
-//                        while(it.hasNext()){
-//                            Trr
-//                        }
-//                    } catch (PoolException ex) {
-//                        logger.error(ex.getMessage());
-//                        throw ex;
-//                    }
-//                }
-//            }
-//            return listGameID;
-//        }
-//    }
+    /**
+     * This class support for getting list from database recommendation game
+     */
+    public static class CacheListRecommendationGame{
+        
+        private int maxNumsGame;
+        
+        private LoadingCache<String,List<String>> cache;
+        
+        public CacheListRecommendationGame(int max){
+            this.maxNumsGame = max;
+            
+            // Create cache loader
+            CacheLoader loaderCache = new CacheLoader<String,List<String>>() {
+                
+                @Override
+                public List<String> load(String k) throws PoolException{
+                    DatabaseRedisConnection dbcnn = null;
+                    return loadDataRecommendationGame();
+                }
+
+                @Override
+                public ListenableFuture<List<String>> reload(String key, List<String> oldValue) throws Exception {
+                    ExecutorService executor = Executors.newFixedThreadPool(1);
+                    ListenableFutureTask<List<String>> taskGetList = ListenableFutureTask.create(new Callable<List<String>>() {
+                       @Override
+                       public List<String> call() throws PoolException {
+                           return loadDataRecommendationGame();
+                       }
+                     });
+                     executor.execute(taskGetList);
+                     return taskGetList;
+                }
+            };
+            
+            // initalize cache
+            this.cache = CacheBuilder.newBuilder()
+                        .expireAfterAccess(DEFAULT_EXPIRE_TIME, TimeUnit.MINUTES)
+                        .refreshAfterWrite(DEFAULT_REFRESH_TIME, TimeUnit.MINUTES)
+                        .build(loaderCache);
+            
+        }
+        
+        private List<String> loadDataRecommendationGame() throws PoolException {
+            DatabaseRedisConnection dbcnn = null;
+            try {
+                dbcnn = pool.borrowObjectFromPool();
+                Jedis jedis = dbcnn.getConnection();
+                jedis.select(constant.DBConstantString.DATABASE_RECOMMENDATION_INDEX);
+                List<String> listGame = jedis.sort(constant.DBConstantString.LIST_GAME, new SortingParams()
+                        .by(constant.DBConstantString.GAME_ID + ":*->".concat(constant.DBConstantString.POINT))
+                        .limit(0, this.maxNumsGame)
+                );
+                return listGame;
+            } catch (PoolException ex) {
+                logger.error(ex);
+                throw ex;
+            } finally {
+                if (dbcnn != null) {
+                    pool.returnObjectToPool(dbcnn);
+                }
+            }
+        }
+        
+        private static final int DEFAULT_EXPIRE_TIME = 20;
+        private static final int DEFAULT_REFRESH_TIME = 15;
+        
+        // This using like keys. So, we can get list from this cache
+        private static final String KEY = "list";
+
+        private List<String> get() throws ExecutionException {
+            return this.cache.get(KEY);
+        }
+    }
     
 }
