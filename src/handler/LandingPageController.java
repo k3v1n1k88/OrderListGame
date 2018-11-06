@@ -58,12 +58,13 @@ public class LandingPageController extends ApiServlet{
             ProducerLogLandingPage prod = new ProducerLogLandingPage(constant.KafkaConstantString.TOPIC_LANDING_PAGE,LandingPageController.configProducer);
             prod.sendLog(logLandingPage);
         } catch (ConfigException ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, "System happened error when setting up");
         } catch (ExecutionException ex) {
-            logger.error("");
+            logger.error(ex);
+            return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, ex.getMessage());
         } catch(Exception ex){
-            logger.error(ex.getMessage());
+            logger.error(ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
         }
         

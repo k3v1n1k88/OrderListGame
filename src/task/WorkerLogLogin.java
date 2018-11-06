@@ -102,7 +102,7 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
                             Map<String, String> gameIDProp = new HashMap<>();
                             gameIDProp.put(constant.DBConstantString.POINT, String.valueOf(listGameID.size()-1));
                             
-                            jedis.hmset((constant.DBConstantString.GAME_ID+":").concat(gameID), gameIDProp);
+                            jedis.hmset(gameID, gameIDProp);
                         }
                     }
                 }

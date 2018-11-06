@@ -6,6 +6,9 @@
 package object.value.database;
 
 import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +18,7 @@ import java.util.Map;
 public class MappingValueWrapper {
     
     private String userID;
-    private Map<String,Info> listGameID;
+    private Map<String,List<Info>> listGameID;
 
     public static MappingValueWrapper parse(String jsonString){
         Gson gson = new Gson();
@@ -23,7 +26,7 @@ public class MappingValueWrapper {
         return ret;
     }
 
-    public MappingValueWrapper(String userID, Map<String, Info> listGameID) {
+    public MappingValueWrapper(String userID, Map<String, List<Info>> listGameID) {
         this.userID = userID;
         this.listGameID = listGameID;
     }
@@ -34,18 +37,20 @@ public class MappingValueWrapper {
     
     public static class Info{
         
-        private Map<Long, Long> deposit;
-        
-        public Info(Map<Long,Long> deposit){
-            this.deposit = deposit;
+        private long timestamp;
+        private long amount;
+
+        public Info(long timestamp, long amount) {
+            this.timestamp = timestamp;
+            this.amount = amount;
         }
 
-        public Map<Long, Long> getDeposit() {
-            return deposit;
+        public long getTimestamp() {
+            return timestamp;
         }
 
-        public void setDeposit(Map<Long, Long> deposit) {
-            this.deposit = deposit;
+        public long getAmount() {
+            return amount;
         }
         
     }
@@ -54,16 +59,29 @@ public class MappingValueWrapper {
         return userID;
     }
 
-    public Map<String, Info> getListGameID() {
-        return listGameID;
+    public Map<String,List<Info>> getListGameID() {
+        return this.listGameID;
+    }
+    
+    public void setListGameID(Map<String, List<Info>> listGameID) {
+        this.listGameID = listGameID;
     }
 
     public void setUserID(String userID) {
         this.userID = userID;
     }
 
-    public void setListGameID(Map<String, Info> listGameID) {
-        this.listGameID = listGameID;
-    }
     
+    
+    public static void main(String[] args) {
+        MappingValueWrapper.Info info1 = new MappingValueWrapper.Info(1000000L,13984948593L);
+        MappingValueWrapper.Info info2 = new MappingValueWrapper.Info(1289211212L,13984948593L);
+        List<Info> listInfo = new ArrayList<>();
+        listInfo.add(info1);
+        listInfo.add(info2);
+        Map<String,List<Info>> m = new HashMap<>();
+        m.put("176271627162", listInfo);
+        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper("34938944",m);
+        System.out.println(mappedPaymentValue.toJSONString());
+    }
 }

@@ -16,8 +16,10 @@ import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
 import exception.ConfigException;
 import exception.PoolException;
+import java.util.ArrayList;
 import object.log.LogPayment;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import object.value.database.MappingValueWrapper;
 import object.value.database.ScoreValueWrapper;
@@ -85,44 +87,66 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
                 // Update database Scoring
                 jedis.select(constant.DBConstantString.DATABASE_SCORING_INDEX);
                 String infoScoring = jedis.hget(session, log.getGameID());
-                ScoreValueWrapper scoreWrapper = ScoreValueWrapper.parse(infoScoring);
-                
-                long amountTotal  = scoreWrapper.getAmountTotal();
-                AddMoreScorePaymentCalculation calculation = new AddMoreScorePaymentCalculation(scoreWrapper.getScore(),scoreWrapper.getLatestLogin(),log.getTime(),log.getAmount());
-                long newScore = calculation.calculatePoint();
-                
-                scoreWrapper.setScore(newScore);
-                scoreWrapper.setAmountTotal(amountTotal+log.getAmount());
-                scoreWrapper.setLatestLogin(log.getTime());
-                
-                jedis.hset(session, log.getGameID(), scoreWrapper.toJSONString());
-                
-                // Write to database Mapping
-                dbLevelDBcnn = poolLevelDB.borrowObjectFromPool();
-                DB db = dbLevelDBcnn.getConnection();
-                
-                String info = asString(db.get(bytes(session)));
-                MappingValueWrapper mappingValue;
-                
-                if(info != null){
-                    mappingValue = MappingValueWrapper.parse(info);
-                    MappingValueWrapper.Info infoDesposite = mappingValue.getListGameID().get(log.getGameID());
-                    infoDesposite.getDeposit().put(log.getTime(), log.getAmount());
-                    mappingValue.getListGameID().get(log.getGameID()).getDeposit().put(log.getTime(), log.getAmount());
-                    
-                    db.put(bytes(session), bytes(mappingValue.toJSONString()));
-                    return true;
+                if(infoScoring == null){
+                    // User deposite for gameID never login
                 }
                 else{
-                    Map<Long,Long> despositList = new HashMap<>();
-                    despositList.put(log.getTime(), log.getAmount());
-                    MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(despositList);
-                    Map<String,MappingValueWrapper.Info> listGame = new HashMap<>();
-                    listGame.put(log.getGameID(), infoDeposit);
                     
-                    mappingValue = new MappingValueWrapper(log.getUserID(),listGame);
-                    db.put(bytes(session), bytes(mappingValue.toJSONString()));
-                    return true;
+                    ScoreValueWrapper scoreWrapper = ScoreValueWrapper.parse(infoScoring);
+
+                    long amountTotal  = scoreWrapper.getAmountTotal();
+                    AddMoreScorePaymentCalculation calculation = new AddMoreScorePaymentCalculation(scoreWrapper.getScore(),scoreWrapper.getLatestLogin(),log.getTime(),log.getAmount());
+                    long newScore = calculation.calculatePoint();
+
+                    scoreWrapper.setScore(newScore);
+                    scoreWrapper.setAmountTotal(amountTotal+log.getAmount());
+                    scoreWrapper.setLatestLogin(log.getTime());
+
+                    jedis.hset(session, log.getGameID(), scoreWrapper.toJSONString());
+
+                    // Write to database MappedLogPayment
+                    dbLevelDBcnn = poolLevelDB.borrowObjectFromPool();
+                    DB db = dbLevelDBcnn.getConnection();
+
+                    String info = asString(db.get(bytes(session)));
+                    MappingValueWrapper mappingValue;
+                    
+                    // If session is not exist
+                    if(info != null){
+                        
+                        mappingValue = MappingValueWrapper.parse(info);
+                        
+                        // Create new info deposit
+                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(),log.getAmount());
+                        
+                        // Push info deposit into history deposit of this gameID
+                        mappingValue.getListGameID().get(log.getGameID()).add(infoDeposit);
+
+                        db.put(bytes(session), bytes(mappingValue.toJSONString()));
+                        
+                        return true;
+                        
+                    }
+                    // If session is existed
+                    else{
+                        // Create new info deposit
+                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(),log.getAmount());
+                        
+                        // Add into history deposit
+                        List<MappingValueWrapper.Info> historyDeposit = new ArrayList<>();
+                        historyDeposit.add(infoDeposit);
+                        
+                        // Add info listgameID
+                        Map<String,List<MappingValueWrapper.Info>> listGameID = new HashMap<>();
+                        listGameID.put(log.getGameID(), historyDeposit);
+                        
+                        // Push data into database Mapped LogPayment
+                        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper(session,listGameID);
+                        db.put(bytes(session), bytes(mappedPaymentValue.toJSONString()));
+                        
+                        return true;
+                        
+                    }
                 }
             }
         } catch (PoolException ex) {

@@ -33,7 +33,7 @@ public class DBConstantString {
 
     public static final String DATABASE_MISSING_MAPPING_NAME = "database_missing_mapping";
 
-    public static final String DATABASE_MAPPING_NAME = "DatabaseMapping";
+    public static final String DATABASE_MAPPING_NAME = "DatabaseMappedLogPayment";
 
     public static final String SESSION = "session";
 

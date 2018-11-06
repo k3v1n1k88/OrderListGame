@@ -5,7 +5,9 @@
  */
 package object.value.database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,28 +47,36 @@ public class MappingValueWrapperTest {
     @Test
     public void testParse() {
         String jsonString = "{\n" +
-                            "  \"userID\": \"1213224\",\n" +
+                            "  \"userID\": \"34938944\",\n" +
                             "  \"listGameID\": {\n" +
-                            "    \"121212ssasas\": {\n" +
-                            "      \"deposit\": {\n" +
-                            "        \"101212\": 20,\n" +
-                            "        \"2232440\": 30\n" +
+                            "    \"176271627162\": [\n" +
+                            "      {\n" +
+                            "        \"timestamp\": 1000000,\n" +
+                            "        \"amount\": 13984948593\n" +
+                            "      },\n" +
+                            "      {\n" +
+                            "        \"timestamp\": 1289211212,\n" +
+                            "        \"amount\": 13984948593\n" +
                             "      }\n" +
-                            "    },\n" +
-                            "    \"34325aasa\": {\n" +
-                            "      \"deposit\": {\n" +
-                            "        \"1133540\": 20,\n" +
-                            "        \"254540\": 30\n" +
+                            "    ],\n" +
+                            "    \"17627161262\": [\n" +
+                            "      {\n" +
+                            "        \"timestamp\": 1000000,\n" +
+                            "        \"amount\": 13984948593\n" +
+                            "      },\n" +
+                            "      {\n" +
+                            "        \"timestamp\": 1289211212,\n" +
+                            "        \"amount\": 13984948593\n" +
                             "      }\n" +
-                            "    }\n" +
+                            "    ]\n" +
                             "  }\n" +
                             "}";
         MappingValueWrapper obj = MappingValueWrapper.parse(jsonString);
-        Map<String,MappingValueWrapper.Info> list = obj.getListGameID();
-        MappingValueWrapper.Info infoGame1 = list.get("121212ssasas");
-        assertEquals(obj.getUserID(), "1213224");
-        assertTrue(infoGame1.getDeposit().get(101212L).equals(20L));
-        assertTrue(infoGame1.getDeposit().get(2232440L).equals(30L));
+        Map<String,List<MappingValueWrapper.Info>> list = obj.getListGameID();
+        List<MappingValueWrapper.Info> historyGame1 = list.get("176271627162");
+        assertEquals(obj.getUserID(), "34938944");
+        assertTrue(historyGame1.get(0).getAmount() == 13984948593L);
+        assertTrue(historyGame1.get(1).getTimestamp()== 1289211212);
     }
 
     /**
@@ -74,23 +84,16 @@ public class MappingValueWrapperTest {
      */
     @Test
     public void testToJSONString() {
-        HashMap<Long,Long> hashMap1 = new HashMap<>();
-        hashMap1.put(10L, 20L);
-        hashMap1.put(20L, 30L);
-        MappingValueWrapper.Info info1 = new MappingValueWrapper.Info(hashMap1);
-        
-        HashMap<Long,Long> hashMap2 = new HashMap<>();
-        hashMap2.put(10L, 20L);
-        hashMap2.put(20L, 30L);
-        MappingValueWrapper.Info info2 = new MappingValueWrapper.Info(hashMap2);
-        
-        HashMap<String,MappingValueWrapper.Info> listGame = new HashMap<>();
-        listGame.put("game1", info1);
-        listGame.put("game2", info2);
-        
-        
-        MappingValueWrapper mappingValue = new MappingValueWrapper("1213224",listGame);
-        System.out.println(mappingValue.toJSONString());
+        String expected = "{\"userID\":\"123\",\"listGameID\":{\"176271627162\":[{\"timestamp\":1000000,\"amount\":13984948593},{\"timestamp\":1289211212,\"amount\":13984948593}]}}";
+        MappingValueWrapper.Info info1 = new MappingValueWrapper.Info(1000000L,13984948593L);
+        MappingValueWrapper.Info info2 = new MappingValueWrapper.Info(1289211212L,13984948593L);
+        List<MappingValueWrapper.Info> listInfo = new ArrayList<>();
+        listInfo.add(info1);
+        listInfo.add(info2);
+        Map<String,List<MappingValueWrapper.Info>> m = new HashMap<>();
+        m.put("176271627162", listInfo);
+        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper("123",m);
+        assertEquals(expected,mappedPaymentValue.toJSONString());
     }
 
 }
