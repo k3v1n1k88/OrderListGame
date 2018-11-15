@@ -168,13 +168,13 @@ public class CacheLandingPage {
         }    
     }
     
-    public List<String> getListRecommendation(){
+    public List<String> getListRecommendation() throws ExecutionException{
         try {
             return this.cacheRecommendationGameList.get(VISUAL_KEY);
         } catch (ExecutionException ex) {
             logger.error("Cannot get list recommendation from cache",ex);
+            throw ex;
         }
-        return null;
     }
     
     private ListGame loadListGameHelper(String session){

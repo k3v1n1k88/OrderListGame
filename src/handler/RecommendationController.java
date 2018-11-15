@@ -9,6 +9,7 @@ import api.ApiOutput;
 import api.ApiServlet;
 import cache.CacheLandingPage;
 import exception.ConfigException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,16 +38,15 @@ public class RecommendationController extends ApiServlet{
     @Override
     protected ApiOutput execute(HttpServletRequest req, HttpServletResponse resp) {
         
-        CacheLandingPage.ListGame listGame = null;
-        String session = req.getParameter(constant.DBConstantString.SESSION);
+        List<String> listGameRecommentdation = null;
         
         try {
-            listGame = cache.getList(session);
+            listGameRecommentdation = cache.getListRecommendation();
             
             ApiOutput apiOutput;
-            if(listGame != null){
+            if(listGameRecommentdation != null){
                 apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.SUCCESS.errorCode, ApiOutput.STATUS_CODE.SUCCESS.msg);
-                apiOutput.setRecommadationList(listGame.getRecommandatioList());
+                apiOutput.setRecommadationList(listGameRecommentdation);
             }
             else{
                 apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode,"Cannot get list game with this session");
@@ -55,9 +55,6 @@ public class RecommendationController extends ApiServlet{
         } catch (ExecutionException ex) {
             logger.error(ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, ex.getMessage());
-        } catch(Exception ex){
-            logger.error(ex);
-            return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
         }
     }
 }
