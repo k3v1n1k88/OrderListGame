@@ -9,6 +9,7 @@ import configuration.ConfigServer;
 import handler.LandingPageController;
 import handler.LogLoginController;
 import handler.LogPaymentController;
+import handler.RecommendationController;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.log4j.Logger;
@@ -63,7 +64,8 @@ public class ListOrderGameServer implements Runnable{
             ServletHandler servletHandler = new ServletHandler();
             servletHandler.addServletWithMapping(LogLoginController.class, "/log/login");
             servletHandler.addServletWithMapping(LogPaymentController.class, "/log/payment");
-            servletHandler.addServletWithMapping(LandingPageController.class, "/getlist");
+            servletHandler.addServletWithMapping(LandingPageController.class, "/get");
+            servletHandler.addServletWithMapping(RecommendationController.class, "/getList");
 
             ResourceHandler resource_handler = new ResourceHandler();
             resource_handler.setResourceBase("./static/");
