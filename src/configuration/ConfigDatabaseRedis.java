@@ -32,7 +32,7 @@ public class ConfigDatabaseRedis extends ConfigurationAbstract {
         this.port = this.prefs.getInt(constant.DBConstantString.PORT, DEFAULT_PORT);
         this.connectionTimeoutMillius = this.prefs.getInt(constant.DBConstantString.CONNECTION_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT_MILLIUS);
         this.soTimeoutMillius = this.prefs.getInt(constant.DBConstantString.SOCKET_TIMEOUT, DEFAULT_SO_TIMEOUT_MILLIUS);
-        this.password = this.prefs.get(constant.DBConstantString.PASSWORD, DEFAULT_PASSWORD);
+        this.password = this.prefs.get(constant.DBConstantString.PASSWORD, null);
         this.ssl = this.prefs.getBoolean(constant.DBConstantString.SSL, DEFAULT_SSL);
         
         System.out.println("Configuration of database Redis:"
@@ -74,7 +74,7 @@ public class ConfigDatabaseRedis extends ConfigurationAbstract {
     
     private static String DEFAULT_HOST = "localhost";
     private static int DEFAULT_PORT = 6379;
-    private static String DEFAULT_PASSWORD = "vng.com.vn";
+//    private static String DEFAULT_PASSWORD = "vng.com.vn";
     private static boolean DEFAULT_SSL = false;
     private static int DEFAULT_CONNECTION_TIMEOUT_MILLIUS = 2000;
     private static int DEFAULT_SO_TIMEOUT_MILLIUS = 2000;
