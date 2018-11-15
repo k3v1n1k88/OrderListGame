@@ -76,8 +76,8 @@ public class DatabaseConnectionPoolRedis extends Pool<DatabaseRedisConnection> i
     public DatabaseRedisConnection borrowObjectFromPool() throws PoolException{
         try{
             return this.getResource();
-        }catch(Exception e){
-            throw new PoolException("Cannot get object from pool",e);
+        }catch(Exception ex){
+            throw new PoolException("Cannot get object from pool",ex);
         }
     }
 

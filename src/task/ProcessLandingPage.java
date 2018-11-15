@@ -9,7 +9,6 @@ import configuration.ConfigConsumer;
 import exception.ConfigException;
 import object.log.LogLandingPage;
 import message.queue.ConsumerLogLandingPage;
-import message.queue.ConsumerLogPayment;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -14,6 +14,7 @@ import database.connection.DatabaseLevelDBConnection;
 import database.connection.DatabaseLevelDBConnectionFactory;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
+import exception.CalculationException;
 import exception.ConfigException;
 import exception.PoolException;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import object.log.LogPayment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import object.value.database.MappingValueWrapper;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
@@ -78,7 +80,7 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
            
             // Mapping
             jedis.select(constant.DBConstantString.DATABASE_MAPPING_GAMEID_SESSION_INDEX);
-            String session = jedis.get(log.getUserID());
+            String session = jedis.hget(log.getUserID(),log.getGameID());
             
             if(session == null){
                 // Write log sribe
@@ -150,6 +152,8 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
                 }
             }
         } catch (PoolException ex) {
+            logger.error(ex);
+        } catch (CalculationException ex) {
             logger.error(ex);
         } finally{
             try {

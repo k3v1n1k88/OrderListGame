@@ -9,7 +9,6 @@ import api.ApiOutput;
 import api.ApiServlet;
 import configuration.ConfigProducer;
 import exception.ConfigException;
-import exception.ParseLogException;
 import object.log.LogLogin;
 import message.queue.ProducerLogLogin;
 import javax.servlet.http.HttpServletRequest;

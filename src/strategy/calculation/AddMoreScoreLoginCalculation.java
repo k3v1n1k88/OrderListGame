@@ -5,6 +5,8 @@
  */
 package strategy.calculation;
 
+import exception.CalculationException;
+
 /**
  *
  * @author root
@@ -16,12 +18,16 @@ public class AddMoreScoreLoginCalculation extends PointCalculation{
     }
     
     @Override
-    public long calculatePoint() {
+    public long calculatePoint() throws CalculationException {
+        
+        if(this.latestLoginTime > this.currentTime){
+            throw new CalculationException();
+        }
         
         long plusScore = AddMoreScoreLoginCalculation.configOfSystem.getPointPerLogin();
         
         long differenceTime = this.currentTime-this.latestLoginTime;
-        double deltaSquare = Math.pow(-1.0*differenceTime/configOfSystem.getUnitTime(),2);  
+        double deltaSquare = Math.pow(differenceTime/configOfSystem.getUnitTime(),2);  
         
         return (long) (this.currentPoint*Math.pow(ReCalculation.configOfSystem.getBaseOfPower(), -1.0*deltaSquare)) + plusScore;
     }

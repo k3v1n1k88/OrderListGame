@@ -6,6 +6,7 @@
 package strategy.calculation;
 
 import configuration.ConfigOfSystem;
+import exception.CalculationException;
 import exception.ConfigException;
 import org.apache.log4j.Logger;
 
@@ -38,5 +39,5 @@ public abstract class PointCalculation {
         this.currentTime = currentLoginTime;
     }
     
-    public abstract long calculatePoint();
+    public abstract long calculatePoint() throws CalculationException;
 }

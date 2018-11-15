@@ -13,6 +13,7 @@ import constant.SystemConstant;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
+import exception.CalculationException;
 import exception.ConfigException;
 import exception.PoolException;
 import object.log.LogLogin;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
@@ -82,37 +84,32 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
                         jedis.sadd(constant.DBConstantString.LIST_GAME, gameID);
                         
                         // Get current point
-                        String currentPointString = jedis.hget(gameID, constant.DBConstantString.POINT);
+                        String currentPointString = jedis.hget((constant.DBConstantString.GAME_ID+":").concat(gameID), constant.DBConstantString.POINT);
                         
                         // Point string can be null if gameID is not exist in Recommendation DB 
                         // (otherway, gameID is new game)
+                        
+                        Map<String, String> gameIDProp = new HashMap<>();
+                        
                         if(currentPointString != null){
                             long point = Long.valueOf(currentPointString); 
                             // Increase point
                             point = point + 1;
-
-                            Map<String,String> gameIDProp = new HashMap<>();
                             gameIDProp.put(constant.DBConstantString.POINT, String.valueOf(point));
-
-                            jedis.hmset((constant.DBConstantString.GAME_ID+":").concat(gameID), gameIDProp);
-                            
                         }
                         else{
-                            
-                            Map<String, String> gameIDProp = new HashMap<>();
                             gameIDProp.put(constant.DBConstantString.POINT, String.valueOf(listGameID.size()-1));
-                            
-                            jedis.hmset(gameID, gameIDProp);
                         }
+                        jedis.hmset((constant.DBConstantString.GAME_ID+":").concat(gameID), gameIDProp);
                     }
                 }
                 // Access with database Mapping
                 jedis.select(constant.DBConstantString.DATABASE_MAPPING_GAMEID_SESSION_INDEX);
-                jedis.set(log.getUserID(), log.getSession());
+                jedis.hset(log.getUserID(), log.getGameID(), log.getSession());
                 return false;
             }
-            // If this gameID is exist in Scoring database, we needn't increase point of any GameID
-            // in Recommendation DB
+            // If this gameID is exist in Scoring database, we just increse point in Scoring database
+            // and dont care about this gameID in Recommendation DB
             else{
                 
                 ScoreValueWrapper scoreValue = ScoreValueWrapper.parse(info);
@@ -136,7 +133,9 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
             }
             
         } catch (PoolException ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex);
+        } catch (CalculationException ex) {
+            logger.error(ex);
         } finally{
             if(dbcnn!=null){
                 try {

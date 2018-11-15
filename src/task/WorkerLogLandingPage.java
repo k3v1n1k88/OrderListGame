@@ -12,11 +12,13 @@ import configuration.ConfigOfSystem;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
+import exception.CalculationException;
 import exception.ConfigException;
 import exception.PoolException;
 import object.log.LogLandingPage;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
@@ -73,6 +75,8 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
                         
             }
         } catch (PoolException ex) {
+            logger.error(ex);
+        } catch (CalculationException ex) {
             logger.error(ex);
         } finally{
             try {

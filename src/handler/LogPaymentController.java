@@ -50,7 +50,7 @@ public class LogPaymentController extends ApiServlet {
         }
 
         String userID = req.getParameter(constant.DBConstantString.USER_ID);
-        String gameID = req.getParameter(constant.DBConstantString.USER_ID);
+        String gameID = req.getParameter(constant.DBConstantString.GAME_ID);
         String amountString = req.getParameter(constant.DBConstantString.AMOUNT);
 
         LogPayment logPayment;

@@ -3,9 +3,58 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/database/mapping/DatabaseMappingStrategy.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/value/database/MappingValueWrapper.java</file>
+            <file>jar:file:/zserver/java-projects/OrderedListGame/lib/junit.jar!/META-INF/MANIFEST.MF</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/cache/CacheLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/strategy/calculation/AddMoreScoreLoginCalculationTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/database/perform/DatabasePerformLevelDB.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/message/queue/ProducerLogLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/object/value/database/MappingValueWrapperTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/cache/CacheLandingPageTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/WorkerAbstract.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/ConfigException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/client/Client.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/CalculationException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/bussiness/ListOrderGameServer.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/database/mapping/missing/DatabaseMappingMissingLevelDB.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/handler/LogLoginController.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/message/queue/ConsumerLogLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/ProcessLogLogin.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/calculation/ReCalculation.java</file>
             <file>file:/zserver/java-projects/OrderedListGame/src/bussiness/ServiceDaemon.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/WorkerLogLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/handler/LogPaymentController.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/ParseLogException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/conf/log4j.properties</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/calculation/AddMoreScoreLoginCalculation.java</file>
             <file>file:/zserver/java-projects/OrderedListGame/conf/developer.config.ini</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/ProcessLogPayment.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/OrderGameListException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/message/queue/ConsumerLogAbstract.java</file>
             <file>file:/zserver/java-projects/OrderedListGame/src/handler/LandingPageController.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/WorkerLogPayment.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/database/connection/DatabaseConnectionPool.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/message/queue/ProducerLogPayment.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/log/LogLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/test/task/WorkerLogPaymentTest.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/log/LogPayment.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/api/ApiServlet.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/database/perform/DatabasePerformMySQL.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/message/queue/ConsumerLogLogin.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/WorkerLogLogin.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/task/ProcessLandingPage.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/log/LogLogin.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/orderedlistgame/OrderedListGame.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/configuration/ConfigDatabaseRedis.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/DatabaseException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/log/LogParser.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/database/connection/DatabaseConnectionPoolRedis.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/value/database/ScoreValueWrapper.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/calculation/AddMoreScorePaymentCalculation.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/exception/CacheException.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/object/log/Log.java</file>
+            <file>file:/zserver/java-projects/OrderedListGame/src/strategy/database/mapping/DatabaseMappingLevelDB.java</file>
         </group>
     </open-files>
 </project-private>

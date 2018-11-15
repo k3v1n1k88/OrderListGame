@@ -18,6 +18,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -46,8 +47,21 @@ public class CacheLandingPage {
     
     private static final Logger logger = Logger.getLogger(CacheLandingPage.class);
     
+    // This use for cache Recommendation game
+    private static final int DEFAULT_EXPIRE_TIME = 20;
+    private static final int DEFAULT_REFRESH_TIME = 15;
+
+    // This using like keys. So, we can get list from this cache
+    private static final String VISUAL_KEY = "list";
+    
     private static DatabaseConnectionPoolRedis pool;
     private static ConfigOfSystem configSystem;
+    private static CacheLandingPage instance;
+    
+    private LoadingCache<String,ListGame> cacheLandingPage;
+    private LoadingCache<String,List<String>> cacheRecommendationGameList;
+    
+    private ConfigCache configCache;
     
     /** 
     * Because, database recommendation cannot overload when get list from session continuously
@@ -56,7 +70,7 @@ public class CacheLandingPage {
     * configured at {@link CacheListRecommendationGame#DEFAULT_REFRESH_TIME}
     * {@link CacheListRecommendationGame#DEFAULT_EXPIRE_TIME}
     */
-    private static CacheListRecommendationGame cacheRecommendationGameList;
+    
     
     static{
         try {
@@ -64,7 +78,6 @@ public class CacheLandingPage {
             DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
             pool = new DatabaseConnectionPoolRedis(factory,config);
             configSystem = new ConfigOfSystem();
-            cacheRecommendationGameList = new CacheListRecommendationGame(configSystem.getLimitRecommendationGame());
         } catch (ConfigException ex) {
             System.out.println(ex.getMessage());
             logger.info(ex.getMessage());
@@ -72,17 +85,52 @@ public class CacheLandingPage {
         }
     }
     
-    private LoadingCache<String,ListGame> cacheLandingPage;
-    private ConfigCache configCache;
+    public static CacheLandingPage getInstance() throws ConfigException{
+        if(instance == null){
+            synchronized(CacheLandingPage.class){
+                instance = new CacheLandingPage();
+            }
+        }
+        return instance;
+    }
     
-    public CacheLandingPage(ConfigCache config){
+    private CacheLandingPage(ConfigCache config){
         
         this.configCache = config;
+        
+        // Initialize cache Recommendation Game
+        CacheLoader loaderCache = new CacheLoader<String, List<String>>() {
+            @Override
+            public List<String> load(String k) throws PoolException {
+                DatabaseRedisConnection dbcnn = null;
+                return loadDataRecommendationGameHelper();
+            }
+
+            @Override
+            public ListenableFuture<List<String>> reload(String key, List<String> oldValue) throws Exception {
+                ExecutorService executor = Executors.newFixedThreadPool(1);
+                ListenableFutureTask<List<String>> taskGetList = ListenableFutureTask.create(new Callable<List<String>>() {
+                    @Override
+                    public List<String> call() throws PoolException {
+                        return loadDataRecommendationGameHelper();
+                    }
+                });
+                executor.execute(taskGetList);
+                return taskGetList;
+            }
+        };
+        
+        this.cacheRecommendationGameList = CacheBuilder.newBuilder()
+                .expireAfterAccess(DEFAULT_EXPIRE_TIME, TimeUnit.MINUTES)
+                .refreshAfterWrite(DEFAULT_REFRESH_TIME, TimeUnit.MINUTES)
+                .build(loaderCache);
+        
+        // Initialize cache landing page
         // Create cache loader
-        CacheLoader<String,ListGame> loader = new CacheLoader<String,ListGame>(){
+        CacheLoader<String,ListGame> loaderCacheLandingPage = new CacheLoader<String,ListGame>(){
             @Override
             public ListGame load(String session) throws PoolException{
-                return CacheLandingPage.load(session);
+                return loadListGameHelper(session);
             }
 
             @Override
@@ -91,7 +139,7 @@ public class CacheLandingPage {
                 ListenableFutureTask<ListGame> taskGetList = ListenableFutureTask.create(new Callable<ListGame>() {
                    @Override
                    public ListGame call() throws PoolException {
-                       return CacheLandingPage.load(session);
+                       return loadListGameHelper(session);
                    }
                  });
                  executor.execute(taskGetList);
@@ -99,16 +147,15 @@ public class CacheLandingPage {
             }  
         };
         
-        // Initalize cache
         cacheLandingPage = CacheBuilder.newBuilder()
                 .maximumSize(configCache.getMaximumSize())
                 .expireAfterWrite(configCache.getExpireAfterWrite(), TimeUnit.SECONDS)
                 .refreshAfterWrite(configCache.getRefreshAfterWrite(), TimeUnit.SECONDS)
-                .build(loader);
-        
+                .build(loaderCacheLandingPage);
+          
     }
     
-    public CacheLandingPage() throws ConfigException{
+    private CacheLandingPage() throws ConfigException{
         this(new ConfigCache());
     }
     
@@ -121,35 +168,25 @@ public class CacheLandingPage {
         }    
     }
     
-    public static class ListGame{
-        
-        private List<String> scoringList;
-        private List<String> recommandationList;
-
-        public List<String> getScoringList() {
-            return scoringList;
+    public List<String> getListRecommendation(){
+        try {
+            return this.cacheRecommendationGameList.get(VISUAL_KEY);
+        } catch (ExecutionException ex) {
+            logger.error("Cannot get list recommendation from cache",ex);
         }
-
-        public void setScoringList(List<String> scoringList) {
-            this.scoringList = scoringList;
-        }
-
-        public List<String> getRecommandatioList() {
-            return recommandationList;
-        }
-
-        public void setRecommandatioList(List<String> recommandatioList) {
-            this.recommandationList = recommandatioList;
-        }
-        
+        return null;
     }
     
-    private static ListGame load(String session) throws PoolException{
+    private ListGame loadListGameHelper(String session){
+        
         DatabaseRedisConnection dbcnn = null;
         ListGame retListGame = null;
+        
         List<String> listGameIDScoring = null;
         List<String> listGameIDRecommendation = null;
+        
         try {
+            
             dbcnn = pool.borrowObjectFromPool();
             Jedis jedis = dbcnn.getConnection();
 
@@ -173,10 +210,16 @@ public class CacheLandingPage {
                     stream().
                     sorted(comparator).
                     collect(Collectors.toList());
-
-            // Get list Recommendation game from cache
-            listGameIDRecommendation = CacheLandingPage.cacheRecommendationGameList.get();
-
+            
+            // Get list Recommendation game from cache.
+            listGameIDRecommendation = new ArrayList<>();
+            listGameIDRecommendation.addAll(cacheRecommendationGameList.get(VISUAL_KEY));
+            
+            // Remove all games in list scoring from list recommendation 
+            for(String s:listGameIDScoring){
+                listGameIDRecommendation.remove(s);
+            }
+            
             // Init list game
             retListGame = new CacheLandingPage.ListGame();
             retListGame.setScoringList(listGameIDScoring);
@@ -184,91 +227,67 @@ public class CacheLandingPage {
 
             return retListGame;
         } catch (PoolException ex) {
-            logger.error(ex.getMessage());
-            throw ex;
+            logger.error("Error when borrow connection to load list game from database",ex);
         } catch (ExecutionException ex) {
-            logger.error(ex.getMessage());
+            logger.error("Error when get info from cache recommendation game", ex);
         } finally {
             if (dbcnn != null) {
-                pool.returnObjectToPool(dbcnn);
+                try {
+                    pool.returnObjectToPool(dbcnn);
+                } catch (PoolException ex) {
+                    logger.error("Error when return connection after load list game from database",ex);
+                }
             }
         }
         return null;
     }
     
-    /**
-     * This class support for getting list from database recommendation game
-     */
-    public static class CacheListRecommendationGame{
-        
-        private int maxNumsGame;
-        
-        private LoadingCache<String,List<String>> cache;
-        
-        public CacheListRecommendationGame(int max){
-            this.maxNumsGame = max;
-            
-            // Create cache loader
-            CacheLoader loaderCache = new CacheLoader<String,List<String>>() {
-                
-                @Override
-                public List<String> load(String k) throws PoolException{
-                    DatabaseRedisConnection dbcnn = null;
-                    return loadDataRecommendationGame();
-                }
-
-                @Override
-                public ListenableFuture<List<String>> reload(String key, List<String> oldValue) throws Exception {
-                    ExecutorService executor = Executors.newFixedThreadPool(1);
-                    ListenableFutureTask<List<String>> taskGetList = ListenableFutureTask.create(new Callable<List<String>>() {
-                       @Override
-                       public List<String> call() throws PoolException {
-                           return loadDataRecommendationGame();
-                       }
-                     });
-                     executor.execute(taskGetList);
-                     return taskGetList;
-                }
-            };
-            
-            // initalize cache
-            this.cache = CacheBuilder.newBuilder()
-                        .expireAfterAccess(DEFAULT_EXPIRE_TIME, TimeUnit.MINUTES)
-                        .refreshAfterWrite(DEFAULT_REFRESH_TIME, TimeUnit.MINUTES)
-                        .build(loaderCache);
-            
-        }
-        
-        private List<String> loadDataRecommendationGame() throws PoolException {
-            DatabaseRedisConnection dbcnn = null;
-            try {
-                dbcnn = pool.borrowObjectFromPool();
-                Jedis jedis = dbcnn.getConnection();
-                jedis.select(constant.DBConstantString.DATABASE_RECOMMENDATION_INDEX);
-                List<String> listGame = jedis.sort(constant.DBConstantString.LIST_GAME, new SortingParams()
-                        .by(constant.DBConstantString.GAME_ID + ":*->".concat(constant.DBConstantString.POINT))
-                        .limit(0, this.maxNumsGame)
-                );
-                return listGame;
-            } catch (PoolException ex) {
-                logger.error(ex);
-                throw ex;
-            } finally {
-                if (dbcnn != null) {
+    private List<String> loadDataRecommendationGameHelper() {
+        DatabaseRedisConnection dbcnn = null;
+        try {
+            dbcnn = pool.borrowObjectFromPool();
+            Jedis jedis = dbcnn.getConnection();
+            jedis.select(constant.DBConstantString.DATABASE_RECOMMENDATION_INDEX);
+            List<String> listGame = jedis.sort(constant.DBConstantString.LIST_GAME, new SortingParams()
+                    .by(constant.DBConstantString.GAME_ID + ":*->".concat(constant.DBConstantString.POINT))
+            );
+            logger.info(listGame.size());
+            return listGame;
+        } catch (PoolException ex) {
+            logger.error("Error when borrow connection from pool to load data", ex);
+        } finally {
+            if (dbcnn != null) {
+                try {
                     pool.returnObjectToPool(dbcnn);
+                } catch (PoolException ex) {
+                    logger.error("Error when return connection after load data to cache from database",ex);
                 }
             }
         }
-        
-        private static final int DEFAULT_EXPIRE_TIME = 20;
-        private static final int DEFAULT_REFRESH_TIME = 15;
-        
-        // This using like keys. So, we can get list from this cache
-        private static final String KEY = "list";
-
-        private List<String> get() throws ExecutionException {
-            return this.cache.get(KEY);
-        }
+        return null;
     }
     
+    // This class created to help for cache landingpage can holder two list scroing and recommendation game
+    public class ListGame{
+        
+        private List<String> scoringList;
+        private List<String> recommandationList;
+
+        public List<String> getScoringList() {
+            return scoringList;
+        }
+
+        public void setScoringList(List<String> scoringList) {
+            this.scoringList = scoringList;
+        }
+
+        public List<String> getRecommandatioList() {
+            return recommandationList;
+        }
+
+        public void setRecommandatioList(List<String> recommandatioList) {
+            this.recommandationList = recommandatioList;
+        }
+    }
+ 
 }

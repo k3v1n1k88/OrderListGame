@@ -34,7 +34,7 @@ public class LandingPageController extends ApiServlet{
     static {
         try {
             configProducer = new ConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
-            cache = new CacheLandingPage();
+            cache = CacheLandingPage.getInstance();
         } catch (ConfigException ex) {
             logger.info(ex.getMessage());
             logger.error(ex);
@@ -45,9 +45,7 @@ public class LandingPageController extends ApiServlet{
     @Override
     protected ApiOutput execute(HttpServletRequest req, HttpServletResponse resp) {
         if (!checkValidParam(req, new String[]{ constant.DBConstantString.SESSION})) {
-            
             return new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode, "Parameter is not valid");
-            
         }
         CacheLandingPage.ListGame listGame = null;
         String session = req.getParameter(constant.DBConstantString.SESSION);
@@ -55,8 +53,20 @@ public class LandingPageController extends ApiServlet{
         
         try {
             listGame = cache.getList(session);
+            
             ProducerLogLandingPage prod = new ProducerLogLandingPage(constant.KafkaConstantString.TOPIC_LANDING_PAGE,LandingPageController.configProducer);
             prod.sendLog(logLandingPage);
+            
+            ApiOutput apiOutput;
+            if(listGame != null){
+                apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.SUCCESS.errorCode, ApiOutput.STATUS_CODE.SUCCESS.msg);
+                apiOutput.setRecommadationList(listGame.getRecommandatioList());
+                apiOutput.setScoringList(listGame.getScoringList());
+            }
+            else{
+                apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode,"Cannot get list game with this session");
+            }
+            return apiOutput;
         } catch (ConfigException ex) {
             logger.error(ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, "System happened error when setting up");
@@ -67,17 +77,6 @@ public class LandingPageController extends ApiServlet{
             logger.error(ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
         }
-        
-        ApiOutput apiOutput;
-        if(listGame != null){
-            apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.SUCCESS.errorCode, ApiOutput.STATUS_CODE.SUCCESS.msg);
-            apiOutput.setRecommadationList(listGame.getRecommandatioList());
-            apiOutput.setScoringList(listGame.getScoringList());
-        }
-        else{
-            apiOutput = new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode,"Cannot get list game with this session");
-        }
-        return apiOutput;
     }
     
 }
