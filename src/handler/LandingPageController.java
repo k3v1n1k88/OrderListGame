@@ -75,7 +75,7 @@ public class LandingPageController extends ApiServlet{
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, ex.getMessage());
         } catch(Exception ex){
             logger.error(ex);
-            return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
+            return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, ex.getMessage());
         }
     }
 }

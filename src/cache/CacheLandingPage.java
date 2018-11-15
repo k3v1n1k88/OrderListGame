@@ -18,6 +18,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import exception.DatabaseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -129,8 +130,14 @@ public class CacheLandingPage {
         // Create cache loader
         CacheLoader<String,ListGame> loaderCacheLandingPage = new CacheLoader<String,ListGame>(){
             @Override
-            public ListGame load(String session) throws PoolException{
-                return loadListGameHelper(session);
+            public ListGame load(String session) throws PoolException, DatabaseException{
+                ListGame listGame = loadListGameHelper(session);
+                if(listGame != null){
+                    return listGame;
+                }else{
+                    throw new DatabaseException("Cannot find this session in database");
+                }
+                
             }
 
             @Override
@@ -191,6 +198,10 @@ public class CacheLandingPage {
             Jedis jedis = dbcnn.getConnection();
 
             Map<String, String> listGame = jedis.hgetAll(session);
+            
+            if(listGame.size()<=0){
+                return null;
+            }
 
             Comparator<String> comparator = new Comparator<String>() {
                 @Override
