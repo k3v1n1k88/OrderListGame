@@ -36,9 +36,7 @@ public class RecommendationController extends ApiServlet{
     
     @Override
     protected ApiOutput execute(HttpServletRequest req, HttpServletResponse resp) {
-        if (!checkValidParam(req, new String[]{ constant.DBConstantString.SESSION})) {
-            return new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode, "Parameter is not valid");
-        }
+        
         CacheLandingPage.ListGame listGame = null;
         String session = req.getParameter(constant.DBConstantString.SESSION);
         
