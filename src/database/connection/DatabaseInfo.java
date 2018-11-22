@@ -85,5 +85,16 @@ public class DatabaseInfo {
     public void setPassword(String password) {
         this.password = password;
     }  
+
+    @Override
+    public String toString() {
+        String ret = "host = " + this.hostAddress
+               +"\n" + "port = " + this.port
+               +"\n" + "database = " + this.databaseName
+               +"\n" + "username = " + this.userName
+               +"\n" + "password = " + this.password;
+        return ret;
+    }
+    
     
 }
