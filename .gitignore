@@ -1,1 +1,6 @@
 /dist/
+/DatabaseMappedLogPayment/
+/lib/
+/logs/
+*.log
+/build/
