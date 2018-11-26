@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
  * @author root
  */
 public class ConfigConsumer extends ConfigurationAbstract{
+    
     private static final Logger LOGGER = Logger.getLogger(ConfigConsumer.class);
             
     private String autoOffsetReset = "latest";
@@ -85,7 +86,7 @@ public class ConfigConsumer extends ConfigurationAbstract{
         
         
         
-        System.out.println("Create consumer with params:"
+        LOGGER.info("Create consumer with params:"
                 + "\n" + ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + " : " +  this.autoOffsetReset
                 + "\n" + ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " +  this.bootstrapServers
                 + "\n" + ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG + " : " +  this.connectionsMaxIdleMs

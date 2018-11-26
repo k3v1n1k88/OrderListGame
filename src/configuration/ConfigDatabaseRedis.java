@@ -35,7 +35,7 @@ public class ConfigDatabaseRedis extends ConfigurationAbstract {
         this.password = this.prefs.get(constant.DBConstantString.PASSWORD, null);
         this.ssl = this.prefs.getBoolean(constant.DBConstantString.SSL, DEFAULT_SSL);
         
-        System.out.println("Configuration of database Redis:"
+        LOGGER.info("Configuration of database Redis:"
                     +"\n"+constant.DBConstantString.HOST+ " : "+ this.host
                     +"\n"+constant.DBConstantString.PORT+ " : "+ this.port
                     +"\n"+constant.DBConstantString.PASSWORD+ " : "+ this.password

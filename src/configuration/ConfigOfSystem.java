@@ -49,7 +49,7 @@ public class ConfigOfSystem extends ConfigurationAbstract{
         this.limitRecommendationGame = this.prefs.getInt(constant.SystemConstantString.LIMIT_RECOMMENDATION_GAME, ConfigOfSystem.DEFAULT_LIMIT_RECOMMENDATION_GAME);
         this.limitScoringGame =  this.prefs.getInt(constant.SystemConstantString.LIMIT_SCORING_GAME, ConfigOfSystem.DEFAULT_LIMIT_SCORING_GAME);
         
-        System.out.println("Config of system with params:"
+        LOGGER.info("Config of system with params:"
                 + "\n" + constant.SystemConstantString.UNIT_TIME + ":" + this.unitTime
                 + "\n" + constant.SystemConstantString.UNIT_PAYMENT + ":" + this.unitPayment
                 + "\n" + constant.SystemConstantString.POINT_PER_LOGIN + ":" + this.pointPerLogin

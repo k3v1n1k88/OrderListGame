@@ -197,7 +197,7 @@ public class CacheLandingPage {
             dbcnn = pool.borrowObjectFromPool();
             Jedis jedis = dbcnn.getConnection();
 
-            Map<String, String> listGame = jedis.hgetAll(session);
+                Map<String, String> listGame = jedis.hgetAll(session);
             
             if(listGame.size()<=0){
                 return null;

@@ -8,6 +8,7 @@ package task;
 import strategy.calculation.AddMoreScorePaymentCalculation;
 import configuration.ConfigConnectionPool;
 import configuration.ConfigOfSystem;
+import configuration.ConfigScribe;
 import database.connection.DatabaseConnectionPoolLevelDB;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseLevelDBConnection;
@@ -22,7 +23,6 @@ import object.log.LogPayment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import object.value.database.MappingValueWrapper;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
@@ -30,42 +30,45 @@ import org.iq80.leveldb.DB;
 import static org.iq80.leveldb.impl.Iq80DBFactory.asString;
 import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
 import redis.clients.jedis.Jedis;
+import zcore.utilities.ScribeServiceClient;
 
 /**
  *
  * @author root
  */
-public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
+public class WorkerLogPayment extends WorkerAbstract<LogPayment> {
 
     private static final Logger logger = Logger.getLogger(WorkerLogPayment.class);
-    
+
     private static DatabaseConnectionPoolRedis poolRedis;
     private static DatabaseConnectionPoolLevelDB poolLevelDB;
-    
+
     private static ConfigOfSystem configSystem;
-    
-    static{
+    private static ConfigScribe configScribe;
+
+    static {
         try {
             // Read config of system
             configSystem = new ConfigOfSystem();
-            
+            configScribe = new ConfigScribe();
+
             // Initialize connection pool Redis
             ConfigConnectionPool configPoolRedis = new ConfigConnectionPool();
             DatabaseRedisConnectionFactory factoryRedis = new DatabaseRedisConnectionFactory();
-            poolRedis = new DatabaseConnectionPoolRedis(factoryRedis,configPoolRedis);
-            
+            poolRedis = new DatabaseConnectionPoolRedis(factoryRedis, configPoolRedis);
+
             // Initialize connection pool LevelDB
             ConfigConnectionPool configPoolLevelDB = new ConfigConnectionPool();
             DatabaseLevelDBConnectionFactory factoryLevelDB = new DatabaseLevelDBConnectionFactory(constant.DBConstantString.DATABASE_MAPPING_NAME);
-            poolLevelDB = new DatabaseConnectionPoolLevelDB(factoryLevelDB,configPoolLevelDB);
-            
+            poolLevelDB = new DatabaseConnectionPoolLevelDB(factoryLevelDB, configPoolLevelDB);
+
         } catch (ConfigException ex) {
             logger.info(ex.getMessage());
             System.exit(0);
         }
     }
-    
-    public WorkerLogPayment(LogPayment log){
+
+    public WorkerLogPayment(LogPayment log) {
         super(log);
     }
 
@@ -77,31 +80,46 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
             // Get connection
             dbRediscnn = poolRedis.borrowObjectFromPool();
             Jedis jedis = dbRediscnn.getConnection();
-           
+
             // Mapping
             jedis.select(constant.DBConstantString.DATABASE_MAPPING_GAMEID_SESSION_INDEX);
-            String session = jedis.hget(log.getUserID(),log.getGameID());
-            
-            if(session == null){
+            String session = jedis.hget(log.getUserID(), log.getGameID());
+
+            // If mapping missing
+            if (session == null) {
                 // Write log sribe
-            }
-            else{
+                ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        10, 5, 1, 10000
+                ).writeLog2(configScribe.getCetegory(), log.toString());
+            } else {
                 // Update database Scoring
                 jedis.select(constant.DBConstantString.DATABASE_SCORING_INDEX);
                 String infoScoring = jedis.hget(session, log.getGameID());
-                if(infoScoring == null){
-                    // User deposite for gameID never login
-                }
-                else{
-                    
+                
+                // This case maybe never come true, because if you got session, that mean
+                // database scoring have info about <session,gameID>. If everything happend, 
+                // maybe something were wrong with my code when processing log login
+                if (infoScoring == null) {
+                    // Check mylog
+                    logger.error("Something happened over my mind. Please check it again. Detail: "
+                            + "\nsession = "+session
+                            + "\ngameID = "+log.getGameID());
+                } else {
+
                     ScoreValueWrapper scoreWrapper = ScoreValueWrapper.parse(infoScoring);
 
-                    long amountTotal  = scoreWrapper.getAmountTotal();
-                    AddMoreScorePaymentCalculation calculation = new AddMoreScorePaymentCalculation(scoreWrapper.getScore(),scoreWrapper.getLatestLogin(),log.getTime(),log.getAmount());
+                    long amountTotal = scoreWrapper.getAmountTotal();
+                    AddMoreScorePaymentCalculation calculation = new AddMoreScorePaymentCalculation(scoreWrapper.getScore(),
+                            scoreWrapper.getLatestLogin(),
+                            log.getTime(),
+                            log.getAmount());
                     long newScore = calculation.calculatePoint();
 
                     scoreWrapper.setScore(newScore);
-                    scoreWrapper.setAmountTotal(amountTotal+log.getAmount());
+                    scoreWrapper.setAmountTotal(amountTotal + log.getAmount());
                     scoreWrapper.setLatestLogin(log.getTime());
 
                     jedis.hset(session, log.getGameID(), scoreWrapper.toJSONString());
@@ -112,42 +130,41 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
 
                     String info = asString(db.get(bytes(session)));
                     MappingValueWrapper mappingValue;
-                    
+
                     // If session is not exist
-                    if(info != null){
-                        
+                    if (info != null) {
+
                         mappingValue = MappingValueWrapper.parse(info);
-                        
+
                         // Create new info deposit
-                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(),log.getAmount());
-                        
+                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(), log.getAmount());
+
                         // Push info deposit into history deposit of this gameID
                         mappingValue.getListGameID().get(log.getGameID()).add(infoDeposit);
 
                         db.put(bytes(session), bytes(mappingValue.toJSONString()));
-                        
+
                         return true;
-                        
-                    }
-                    // If session is existed
-                    else{
+
+                    } // If session is existed
+                    else {
                         // Create new info deposit
-                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(),log.getAmount());
-                        
+                        MappingValueWrapper.Info infoDeposit = new MappingValueWrapper.Info(log.getTime(), log.getAmount());
+
                         // Add into history deposit
                         List<MappingValueWrapper.Info> historyDeposit = new ArrayList<>();
                         historyDeposit.add(infoDeposit);
-                        
+
                         // Add info listgameID
-                        Map<String,List<MappingValueWrapper.Info>> listGameID = new HashMap<>();
+                        Map<String, List<MappingValueWrapper.Info>> listGameID = new HashMap<>();
                         listGameID.put(log.getGameID(), historyDeposit);
-                        
+
                         // Push data into database Mapped LogPayment
-                        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper(session,listGameID);
+                        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper(session, listGameID);
                         db.put(bytes(session), bytes(mappedPaymentValue.toJSONString()));
-                        
+
                         return true;
-                        
+
                     }
                 }
             }
@@ -155,17 +172,19 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment>{
             logger.error(ex);
         } catch (CalculationException ex) {
             logger.error(ex);
-        } finally{
+        } finally {
             try {
-                if(dbRediscnn != null)
+                if (dbRediscnn != null) {
                     poolRedis.returnObjectToPool(dbRediscnn);
-                if(dbLevelDBcnn != null)
+                }
+                if (dbLevelDBcnn != null) {
                     poolLevelDB.returnObjectToPool(dbLevelDBcnn);
+                }
             } catch (PoolException ex) {
                 logger.error(ex.getMessage());
             }
         }
         return false;
     }
-    
+
 }

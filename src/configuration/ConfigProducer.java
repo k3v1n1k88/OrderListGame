@@ -60,7 +60,7 @@ public class ConfigProducer extends ConfigurationAbstract{
         this.retryBackoffMs = this.prefs.get(constant.KafkaConstantString.RETRY_BACKOFF_MS, DEFAULT_RETRY_BACKOFF_MS);
         this.sendBufferBytes = this.prefs.get(constant.KafkaConstantString.SEND_BUFFER_BYTES, DEFAULT_SEND_BUFFER_BYTES);
     
-        System.out.println("Load config producer with param: "
+        LOGGER.info("Load config producer with param: "
                 + "\n" + ProducerConfig.ACKS_CONFIG + " : " + this.acks
                 + "\n" + ProducerConfig.BATCH_SIZE_CONFIG + " : " + this.batchSize
                 + "\n" + ProducerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " + this.bootstrapServers

@@ -6,6 +6,7 @@
 package configuration;
 
 import exception.ConfigException;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -13,6 +14,8 @@ import exception.ConfigException;
  * @author root
  */
 public class ConfigCache extends ConfigurationAbstract {
+    
+    private static Logger logger = Logger.getLogger(ConfigCache.class);
     
     private long refreshAfterWrite;
     private long expireAfterWrite;
@@ -31,7 +34,7 @@ public class ConfigCache extends ConfigurationAbstract {
         this.maximumSize = this.prefs.getLong(constant.CacheConstantString.MAXIMUM_SIZE, ConfigCache.DEFAULT_MAXIMUM_SIZE);
         this.maximumWeight = this.prefs.getLong(constant.CacheConstantString.MAXIMUM_WEIGHT, ConfigCache.DEFAULT_MAXIMUM_WEIGHT);
         
-        System.out.println("Config of cache: "
+        logger.info("Config of cache: "
                 + "\n" + constant.CacheConstantString.REFRESH_AFTER_WRITE + ":" + this.refreshAfterWrite
                 + "\n" + constant.CacheConstantString.EXPIRE_AFTER_ACCESS + ":" + this.expireAfterAccess
                 + "\n" + constant.CacheConstantString.EXPIRE_AFTER_WRITE + ":" + this.expireAfterWrite

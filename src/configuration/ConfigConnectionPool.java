@@ -64,7 +64,7 @@ public class ConfigConnectionPool extends ConfigurationAbstract{
         this.timeBetweenEvictionRunsMillis = this.prefs.getLong(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS, DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
         this.lifo = this.prefs.getBoolean(PoolConstantString.RETURN_POLICY, DEFAULT_RETURN_POLICY);
         
-        System.out.println("Pool connection configuration:"
+        LOGGER.info("Pool connection configuration:"
                 + "\nblockWhenExhausted: " + this.blockWhenExhausted
                 + "\nevictorShutdownTimeoutMillis:" + this.evictorShutdownTimeoutMillis
                 + "\nfairness: " + this.fairness

@@ -45,7 +45,7 @@ public class ConfigDatabaseLevelDB extends ConfigurationAbstract {
         this.verifyChecksums = this.prefs.getBoolean(constant.DBConstantString.VERIFY_CHECKSUMS_CONFIG, ConfigDatabaseLevelDB.DEFAULT_VERIFY_CHECKSUMS);
         this.paranoidChecks = this.prefs.getBoolean(constant.DBConstantString.PARANOID_CHECKS_CONFIG, ConfigDatabaseLevelDB.DEFAULT_PARANOID_CHECKS);
         
-        System.out.println("Config of leveldb database:"
+        logger.info("Config of leveldb database:"
             + "\n" + constant.DBConstantString.CREATE_IF_MISSING_CONFIG + ":" + this.createIfMissing
             + "\n" + constant.DBConstantString.ERROR_IF_EXISTS_CONFIG + ":" + this.errorIfExists
             + "\n" + constant.DBConstantString.WRITE_BUFFER_SIZE_CONFIG + ":" + this.writeBufferSize

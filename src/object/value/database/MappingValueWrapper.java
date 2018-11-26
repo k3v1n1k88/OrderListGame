@@ -73,15 +73,15 @@ public class MappingValueWrapper {
 
     
     
-    public static void main(String[] args) {
-        MappingValueWrapper.Info info1 = new MappingValueWrapper.Info(1000000L,13984948593L);
-        MappingValueWrapper.Info info2 = new MappingValueWrapper.Info(1289211212L,13984948593L);
-        List<Info> listInfo = new ArrayList<>();
-        listInfo.add(info1);
-        listInfo.add(info2);
-        Map<String,List<Info>> m = new HashMap<>();
-        m.put("176271627162", listInfo);
-        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper("34938944",m);
-        System.out.println(mappedPaymentValue.toJSONString());
-    }
+//    public static void main(String[] args) {
+//        MappingValueWrapper.Info info1 = new MappingValueWrapper.Info(1000000L,13984948593L);
+//        MappingValueWrapper.Info info2 = new MappingValueWrapper.Info(1289211212L,13984948593L);
+//        List<Info> listInfo = new ArrayList<>();
+//        listInfo.add(info1);
+//        listInfo.add(info2);
+//        Map<String,List<Info>> m = new HashMap<>();
+//        m.put("176271627162", listInfo);
+//        MappingValueWrapper mappedPaymentValue = new MappingValueWrapper("34938944",m);
+//        System.out.println(mappedPaymentValue.toJSONString());
+//    }
 }

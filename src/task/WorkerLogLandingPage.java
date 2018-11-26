@@ -61,14 +61,17 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
             Set<String> gameIDList = jedis.keys(log.getSession());
             Iterator<String> ite = gameIDList.iterator();
             while(ite.hasNext()){
+                
                 String gameID = ite.next();
                 String infoGame = jedis.hget(log.getSession(), gameID);
+                
+                // Calculate new score
                 ScoreValueWrapper scoreValue = ScoreValueWrapper.parse(infoGame);
                 long currentScore = scoreValue.getScore();
                 PointCalculation pointCal = new ReCalculation(currentScore,scoreValue.getLatestLogin(),log.getTimeStamp());
                 long newScore = pointCal.calculatePoint();
                 
-                // Set score again
+                // Modify score
                 scoreValue.setScore(newScore);
                 
                 jedis.hset(log.getSession(), gameID, scoreValue.toJSONString());

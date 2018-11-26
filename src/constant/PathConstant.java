@@ -27,5 +27,7 @@ public final class PathConstant {
     
     public static final String PATH_TO_CACHE_CONFIG_FILE = "./conf/developer.config.ini";
     
+    public static final String PATH_TO_SCRIBE_CONFIG_FILE = "./conf/developer.config.ini";
+    
     private PathConstant(){}
 }
