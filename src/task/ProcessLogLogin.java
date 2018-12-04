@@ -25,7 +25,7 @@ public class ProcessLogLogin extends ProcessLogAbstract{
     public ProcessLogLogin(ConfigConsumer config, int maximumThread) throws ConfigException{
         super(config, maximumThread);
         try {
-            consumer = new ConsumerLogLogin(constant.KafkaConstantString.TOPIC_LANDING_PAGE, configConsumer);
+            consumer = new ConsumerLogLogin(constant.KafkaConstantString.TOPIC_LOG_LOGIN, configConsumer);
         } catch (ConfigException ex) {
             throw new ConfigException("Cannot create consumer",ex);
         }
@@ -40,11 +40,10 @@ public class ProcessLogLogin extends ProcessLogAbstract{
         excutor = Executors.newFixedThreadPool(maximumThread);
         while(true){
             try{
-                
                 ArrayList<LogLogin> list = (ArrayList<LogLogin>) consumer.poolLog(0);
                 if (list.size()>0) {
                     for(LogLogin log:list){
-//                        logger.info(log.parse2String());
+                        logger.info(log.parse2String());
                         excutor.submit(new WorkerLogLogin(log));
                     }
                 }

@@ -1,7 +1,9 @@
-/dist/
+/khoahoc
+
+dist/
 /DatabaseMappedLogPayment/
 DatabaseMappedLogPayment/*
 /lib/
-/logs/
+logs
 *.log
 /build/
