@@ -6,6 +6,7 @@
 package database.connection;
 
 
+import exception.DatabaseException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ public class DatabaseMySQLConnection implements DatabaseConnection {
     }
    
     @Override
-    public void createConnection() throws SQLException {
+    public void createConnection() throws DatabaseException {
         if(this.connection != null){
             return;
         }
@@ -52,13 +53,17 @@ public class DatabaseMySQLConnection implements DatabaseConnection {
             this.connection = DriverManager.getConnection(address, userName, password);
         } catch (SQLException ex) {
             LOGGER.error("Create connection failure with SQL instrustment: " + address + ", user:" + userName + " password:" + password + "\n");
-            throw ex;
+            throw new DatabaseException("Create connection failure with SQL instrustment: " + address + ", user:" + userName + " password:" + password + "\n");
         }
     }
     @Override
-    public void close() throws Exception {
+    public void close() throws DatabaseException {
         if(this.connection != null){
-            this.connection.close();
+            try {
+                this.connection.close();
+            } catch (SQLException ex) {
+                throw new DatabaseException();
+            }
         }
     }
     

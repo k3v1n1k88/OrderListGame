@@ -33,6 +33,7 @@ public class ProcessLogPayment extends ProcessLogAbstract{
     public ProcessLogPayment(ConfigConsumer config) throws ConfigException{
         this(config, DEFAULT_MAXIMUM_THREAD);
     }
+    
     @Override
     public void run() {
         while(true){
