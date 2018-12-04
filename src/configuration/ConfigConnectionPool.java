@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  *
  * @author root
  */
-public class ConfigConnectionPool extends ConfigurationAbstract{
+public class ConfigConnectionPool extends ConfigAbstract{
 
     private static final long serialVersionUID = 498594584985L;
     
@@ -42,7 +42,7 @@ public class ConfigConnectionPool extends ConfigurationAbstract{
     
     public ConfigConnectionPool(String path) throws ConfigException{
         
-        super(path,PoolConstantString.CONNECTION_POOL);
+        super(path,PoolConstantString.CONNECTION_POOL_NODE);
         
         this.blockWhenExhausted = this.prefs.getBoolean(PoolConstantString.BLOCK_WHEN_EXHAUSTED, DEFAULT_BLOCK_WHEN_EXHAUSTED);
         this.evictorShutdownTimeoutMillis = this.prefs.getLong(PoolConstantString.EVICTOR_SHUTDOWN_TIMEOUT_MILLIS, DEFAULT_EVICTOR_SHUTDOWN_TIMEOUT_MILLIS);
@@ -64,26 +64,7 @@ public class ConfigConnectionPool extends ConfigurationAbstract{
         this.timeBetweenEvictionRunsMillis = this.prefs.getLong(PoolConstantString.TIME_BETWEEN_EVICTION_RUNS_MILLIS, DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
         this.lifo = this.prefs.getBoolean(PoolConstantString.RETURN_POLICY, DEFAULT_RETURN_POLICY);
         
-        LOGGER.info("Pool connection configuration:"
-                + "\nblockWhenExhausted: " + this.blockWhenExhausted
-                + "\nevictorShutdownTimeoutMillis:" + this.evictorShutdownTimeoutMillis
-                + "\nfairness: " + this.fairness
-                + "\nmaxWaitMillis: " + this.maxWaitMillis
-                + "\nminEvictableIdleTimeMillis: " + this.minEvictableIdleTimeMillis
-                + "\nmaxTotal: " + this.maxTotal
-                + "\nmaxIdle: " + this.maxIdle
-                + "\nminIdle: " + this.minIdle
-                + "\nmaxTotalPerKey: " + this.maxTotalPerKey
-                + "\nminIdlePerKey: " + this.minIdlePerKey
-                + "\nmaxIdlePerKey: " + this.maxIdlePerKey
-                + "\nnumTestsPerEvictionRun: " + this.numTestsPerEvictionRun
-                + "\nsoftMinEvictableIdleTimeMillis: " + this.softMinEvictableIdleTimeMillis
-                + "\ntestOnCreate: " + this.testOnCreate
-                + "\ntestOnBorrow: " + this.testOnBorrow
-                + "\ntestOnReturn: " + this.testOnReturn
-                + "\ntestWhileIdle: " + this.testWhileIdle
-                + "\ntimeBetweenEvictionRunsMillis: " + this.timeBetweenEvictionRunsMillis
-                + "\nreturnPolicy: " + this.lifo);
+        
     }
 
     public ConfigConnectionPool() throws ConfigException {
@@ -185,5 +166,33 @@ public class ConfigConnectionPool extends ConfigurationAbstract{
     private static boolean DEFAULT_TEST_WHILE_IDLE = false;
     private static long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1;
     private static boolean DEFAULT_RETURN_POLICY = true;
-    
+
+    @Override
+    public void showConfig() {
+        LOGGER.info("Pool connection configuration:"
+                + "\nblockWhenExhausted: " + this.blockWhenExhausted
+                + "\nevictorShutdownTimeoutMillis:" + this.evictorShutdownTimeoutMillis
+                + "\nfairness: " + this.fairness
+                + "\nmaxWaitMillis: " + this.maxWaitMillis
+                + "\nminEvictableIdleTimeMillis: " + this.minEvictableIdleTimeMillis
+                + "\nmaxTotal: " + this.maxTotal
+                + "\nmaxIdle: " + this.maxIdle
+                + "\nminIdle: " + this.minIdle
+                + "\nmaxTotalPerKey: " + this.maxTotalPerKey
+                + "\nminIdlePerKey: " + this.minIdlePerKey
+                + "\nmaxIdlePerKey: " + this.maxIdlePerKey
+                + "\nnumTestsPerEvictionRun: " + this.numTestsPerEvictionRun
+                + "\nsoftMinEvictableIdleTimeMillis: " + this.softMinEvictableIdleTimeMillis
+                + "\ntestOnCreate: " + this.testOnCreate
+                + "\ntestOnBorrow: " + this.testOnBorrow
+                + "\ntestOnReturn: " + this.testOnReturn
+                + "\ntestWhileIdle: " + this.testWhileIdle
+                + "\ntimeBetweenEvictionRunsMillis: " + this.timeBetweenEvictionRunsMillis
+                + "\nreturnPolicy: " + this.lifo
+        );
+    }
+    @Override
+    public void checkConfig() throws ConfigException {
+        
+    }
 }

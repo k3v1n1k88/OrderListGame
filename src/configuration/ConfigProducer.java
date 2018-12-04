@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  *
  * @author root
  */
-public class ConfigProducer extends ConfigurationAbstract{
+public class ConfigProducer extends ConfigAbstract{
     
     private static final Logger LOGGER = Logger.getLogger(ConfigProducer.class);
     
@@ -43,8 +43,26 @@ public class ConfigProducer extends ConfigurationAbstract{
 
     private String sendBufferBytes;
     
+    private static ConfigProducer _instance;
+    
+    public static ConfigProducer getInstance() throws ConfigException{
+        ConfigProducer config = null;
+        if(_instance == null){
+            synchronized(ConfigProducer.class){ 
+                if(_instance == null){
+                    init();
+                }
+            }
+        }
+        return config;
+    }
+    
+    public static void init() throws ConfigException{
+       _instance = new ConfigProducer();
+    }
+    
     public ConfigProducer(String pathFile) throws ConfigException{
-        super(pathFile,constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
+        super(pathFile,constant.KafkaConstantString.PRODUCER_KAFKA_NODE);
         
         this.acks = this.prefs.get(constant.KafkaConstantString.ACKS, DEFAULT_ACKS);
         this.batchSize = this.prefs.get(constant.KafkaConstantString.BATCH_SIZE, DEFAULT_BATCH_SIZE);
@@ -60,21 +78,7 @@ public class ConfigProducer extends ConfigurationAbstract{
         this.retryBackoffMs = this.prefs.get(constant.KafkaConstantString.RETRY_BACKOFF_MS, DEFAULT_RETRY_BACKOFF_MS);
         this.sendBufferBytes = this.prefs.get(constant.KafkaConstantString.SEND_BUFFER_BYTES, DEFAULT_SEND_BUFFER_BYTES);
     
-        LOGGER.info("Load config producer with param: "
-                + "\n" + ProducerConfig.ACKS_CONFIG + " : " + this.acks
-                + "\n" + ProducerConfig.BATCH_SIZE_CONFIG + " : " + this.batchSize
-                + "\n" + ProducerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " + this.bootstrapServers
-                + "\n" + ProducerConfig.BUFFER_MEMORY_CONFIG + " : " + this.bufferMemory
-                + "\n" + ProducerConfig.COMPRESSION_TYPE_CONFIG + " : " + this.compressionType
-                + "\n" + ProducerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG + " : " + this.connectionsMaxIdleMs
-                + "\n" + ProducerConfig.LINGER_MS_CONFIG + " : " + this.lingerMs
-                + "\n" + ProducerConfig.MAX_BLOCK_MS_CONFIG + " : " + this.maxBlockMs
-                + "\n" + ProducerConfig.MAX_REQUEST_SIZE_CONFIG + " : " + this.maxRequestSize
-                + "\n" + ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG + " : " + this.requestTimeoutMs
-                + "\n" + ProducerConfig.RETRIES_CONFIG + " : " + this.retries
-                + "\n" + ProducerConfig.RETRY_BACKOFF_MS_CONFIG + " : " + this.retryBackoffMs
-                + "\n" + ProducerConfig.SEND_BUFFER_CONFIG + " : " + this.sendBufferBytes
-        );
+       
     }
     
     public ConfigProducer() throws ConfigException{
@@ -160,4 +164,26 @@ public class ConfigProducer extends ConfigurationAbstract{
 
     private static final String DEFAULT_SEND_BUFFER_BYTES = "-1";
 
+    @Override
+    public void showConfig() {
+         LOGGER.info("Load config producer with param: "
+                + "\n" + ProducerConfig.ACKS_CONFIG + " : " + this.acks
+                + "\n" + ProducerConfig.BATCH_SIZE_CONFIG + " : " + this.batchSize
+                + "\n" + ProducerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " + this.bootstrapServers
+                + "\n" + ProducerConfig.BUFFER_MEMORY_CONFIG + " : " + this.bufferMemory
+                + "\n" + ProducerConfig.COMPRESSION_TYPE_CONFIG + " : " + this.compressionType
+                + "\n" + ProducerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG + " : " + this.connectionsMaxIdleMs
+                + "\n" + ProducerConfig.LINGER_MS_CONFIG + " : " + this.lingerMs
+                + "\n" + ProducerConfig.MAX_BLOCK_MS_CONFIG + " : " + this.maxBlockMs
+                + "\n" + ProducerConfig.MAX_REQUEST_SIZE_CONFIG + " : " + this.maxRequestSize
+                + "\n" + ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG + " : " + this.requestTimeoutMs
+                + "\n" + ProducerConfig.RETRIES_CONFIG + " : " + this.retries
+                + "\n" + ProducerConfig.RETRY_BACKOFF_MS_CONFIG + " : " + this.retryBackoffMs
+                + "\n" + ProducerConfig.SEND_BUFFER_CONFIG + " : " + this.sendBufferBytes
+        );
+    }
+    @Override
+    public void checkConfig() throws ConfigException {
+        
+    }
 }

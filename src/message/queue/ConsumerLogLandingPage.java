@@ -8,7 +8,6 @@ package message.queue;
 import configuration.ConfigConsumer;
 import exception.ConfigException;
 import object.log.LogLandingPage;
-import static message.queue.ConsumerLogAbstract.DEFAULT_CLIENT_ID;
 import serialization.LogLandingPageDeserializer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +20,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
  */
 public class ConsumerLogLandingPage extends ConsumerLogAbstract<String,LogLandingPage>{
     
+    private static final String CLIENT_ID = "Log LandingPage";
+    private static final String GROUP_ID = "Log LandingPage";
+    
     public ConsumerLogLandingPage(List<String> topics, String clientID, String groupID, ConfigConsumer configConsumer) throws ConfigException {
         super(topics, clientID, groupID, LogLandingPageDeserializer.class.getName(),configConsumer);
     }
@@ -30,11 +32,11 @@ public class ConsumerLogLandingPage extends ConsumerLogAbstract<String,LogLandin
     }
 
     public ConsumerLogLandingPage(String topic) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID,DEFAULT_GROUP_ID, new ConfigConsumer());
+        this(topic, CLIENT_ID,GROUP_ID, new ConfigConsumer());
     }
     
     public ConsumerLogLandingPage(String topic, ConfigConsumer config) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID,DEFAULT_GROUP_ID, config);
+        this(topic,CLIENT_ID,GROUP_ID, config);
     }
 
     @Override

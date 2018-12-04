@@ -5,10 +5,10 @@
  */
 package message.queue;
 
+import configuration.ConfigFactory;
 import configuration.ConfigProducer;
 import exception.ConfigException;
 import object.log.LogLandingPage;
-import static message.queue.ProducerLogAbstract.DEFAULT_CLIENT_ID;
 import serialization.LogLandingPageSerializer;
 import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.Callback;
@@ -23,13 +23,13 @@ public class ProducerLogLandingPage extends ProducerLogAbstract<String,LogLandin
     public ProducerLogLandingPage(String topic, String clientID, ConfigProducer configProducer) throws ConfigException {
         super(topic, clientID, LogLandingPageSerializer.class.getName(), configProducer);
     }
-
-    public ProducerLogLandingPage(String topic) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID, new ConfigProducer());
+    
+    public ProducerLogLandingPage(String topic, ConfigProducer configProducer) throws ConfigException {
+        super(topic, LogLandingPageSerializer.class.getName(), configProducer);
     }
     
-    public ProducerLogLandingPage(String topic, ConfigProducer config) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID, config);
+    public ProducerLogLandingPage(String topic) throws ConfigException {
+        this(topic, ConfigFactory.getConfigProducer(topic));
     }
 
     @Override

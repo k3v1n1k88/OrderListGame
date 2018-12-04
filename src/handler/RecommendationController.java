@@ -29,9 +29,7 @@ public class RecommendationController extends ApiServlet{
         try {
             cache = CacheLandingPage.getInstance();
         } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
             logger.error(ex);
-            System.exit(0);
         }
     }
     

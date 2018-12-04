@@ -5,6 +5,9 @@
  */
 package configuration;
 
+import exception.ConfigException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,6 +39,16 @@ public class ConfigConnectionPoolTest {
     @After
     public void tearDown() {
     }
-
+    
+    @Test
+    public void testReadConfig(){
+        try {
+            String pathFile = "./conf/developer.config.ini";
+            ConfigFactory.initConfigConnectionPool(pathFile);
+//            config.showConfig();
+        } catch (ConfigException ex) {
+            fail("Expected can read file but got a exception"+ex);
+        }
+    }
     
 }

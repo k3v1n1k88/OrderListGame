@@ -61,8 +61,18 @@ public class DatabaseConnectionPoolRedisTest {
         try {
             DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
             DatabaseConnectionPoolRedis pool = new DatabaseConnectionPoolRedis(factory);
-            DatabaseRedisConnection dbcnn = pool.borrowObjectFromPool();
-            assertEquals("PONG",dbcnn.getConnection().ping());
+            
+            DatabaseRedisConnection dbcnn1 = pool.borrowObjectFromPool();
+            DatabaseRedisConnection dbcnn2 = pool.borrowObjectFromPool();
+            DatabaseRedisConnection dbcnn3 = pool.borrowObjectFromPool();
+            DatabaseRedisConnection dbcnn4 = pool.borrowObjectFromPool();
+            
+            assertEquals("PONG",dbcnn1.getConnection().ping());
+            assertEquals("PONG",dbcnn2.getConnection().ping());
+            assertEquals("PONG",dbcnn3.getConnection().ping());
+            assertEquals("PONG",dbcnn4.getConnection().ping());
+            
+            
         } catch (ConfigException ex) {
             fail("Error when read config file");
         } catch (PoolException ex) {

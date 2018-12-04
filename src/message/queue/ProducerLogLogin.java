@@ -5,6 +5,7 @@
  */
 package message.queue;
 
+import configuration.ConfigFactory;
 import configuration.ConfigProducer;
 import exception.ConfigException;
 import object.log.LogLogin;
@@ -23,11 +24,11 @@ public class ProducerLogLogin extends ProducerLogAbstract<String,LogLogin> {
     }
 
     public ProducerLogLogin(String topic) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID,new ConfigProducer());
+        this(topic, ConfigFactory.getConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE));
     }
     
     public ProducerLogLogin(String topic, ConfigProducer config) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID,config);
+        super(topic,serialization.LogLoginSerializer.class.getName(), config);
     }
 
     @Override

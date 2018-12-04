@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  *
  * @author root
  */
-public class ConfigCache extends ConfigurationAbstract {
+public class ConfigCache extends ConfigAbstract {
     
     private static Logger logger = Logger.getLogger(ConfigCache.class);
     
@@ -34,13 +34,6 @@ public class ConfigCache extends ConfigurationAbstract {
         this.maximumSize = this.prefs.getLong(constant.CacheConstantString.MAXIMUM_SIZE, ConfigCache.DEFAULT_MAXIMUM_SIZE);
         this.maximumWeight = this.prefs.getLong(constant.CacheConstantString.MAXIMUM_WEIGHT, ConfigCache.DEFAULT_MAXIMUM_WEIGHT);
         
-        logger.info("Config of cache: "
-                + "\n" + constant.CacheConstantString.REFRESH_AFTER_WRITE + ":" + this.refreshAfterWrite
-                + "\n" + constant.CacheConstantString.EXPIRE_AFTER_ACCESS + ":" + this.expireAfterAccess
-                + "\n" + constant.CacheConstantString.EXPIRE_AFTER_WRITE + ":" + this.expireAfterWrite
-                + "\n" + constant.CacheConstantString.MAXIMUM_SIZE + ":" + this.maximumSize
-                + "\n" + constant.CacheConstantString.MAXIMUM_WEIGHT + ":" + this.maximumWeight
-        );
     }
     
     public ConfigCache() throws ConfigException{
@@ -78,5 +71,22 @@ public class ConfigCache extends ConfigurationAbstract {
     public static final long DEFAULT_MAXIMUM_SIZE = 4194304;
 
     public static final long DEFAULT_MAXIMUM_WEIGHT = 1024;
+
+    @Override
+    public void showConfig() {
+        
+        logger.info("Config of cache: "
+                + "\n" + constant.CacheConstantString.REFRESH_AFTER_WRITE + ":" + this.refreshAfterWrite
+                + "\n" + constant.CacheConstantString.EXPIRE_AFTER_ACCESS + ":" + this.expireAfterAccess
+                + "\n" + constant.CacheConstantString.EXPIRE_AFTER_WRITE + ":" + this.expireAfterWrite
+                + "\n" + constant.CacheConstantString.MAXIMUM_SIZE + ":" + this.maximumSize
+                + "\n" + constant.CacheConstantString.MAXIMUM_WEIGHT + ":" + this.maximumWeight
+        );
+    }
+
+    @Override
+    public void checkConfig() throws ConfigException {
+        
+    }
     
 }

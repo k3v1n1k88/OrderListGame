@@ -6,6 +6,7 @@
 package database.connection;
 
 import configuration.ConfigDatabaseLevelDB;
+import configuration.ConfigFactory;
 import exception.ConfigException;
 import exception.DatabaseException;
 import org.apache.commons.pool2.PooledObject;
@@ -22,13 +23,13 @@ public class DatabaseLevelDBConnectionFactory implements PooledObjectFactory<Dat
     
     private ConfigDatabaseLevelDB config;
     
-    public DatabaseLevelDBConnectionFactory(String databaseName, String pathDatabaseConfig) throws ConfigException{
-        config = new ConfigDatabaseLevelDB(pathDatabaseConfig);
+    public DatabaseLevelDBConnectionFactory(String databaseName, ConfigDatabaseLevelDB config) throws ConfigException{
+        this.config = config;
         this.databaseName = databaseName;
     }
     
     public DatabaseLevelDBConnectionFactory(String databaseName) throws ConfigException{
-        this(databaseName, constant.PathConstant.PATH_TO_DATABASE_LEVELDB_CONFIG_FILE);
+        this(databaseName, ConfigFactory.getConfigDatabaseLevelDB(constant.PathConstant.PATH_TO_DATABASE_LEVELDB_CONFIG_FILE));
     }
     
     

@@ -12,45 +12,45 @@ import message.queue.ConsumerLogLogin;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import message.queue.ConsumerLogLandingPage;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author root
  */
-public class ProcessLogLogin implements Runnable{
-    
-    private static final Logger logger = Logger.getLogger(ProcessLogLogin.class);
-    private ConfigConsumer config;
-    ConsumerLogLogin consumer;
-    
-    private static final int MAXIMUM_THREAD = 100;
-    
-    public ProcessLogLogin(ConfigConsumer config){
-        this.config = config;
+public class ProcessLogLogin extends ProcessLogAbstract{
+
+    public ProcessLogLogin(ConfigConsumer config, int maximumThread) throws ConfigException{
+        super(config, maximumThread);
+        try {
+            consumer = new ConsumerLogLogin(constant.KafkaConstantString.TOPIC_LANDING_PAGE, configConsumer);
+        } catch (ConfigException ex) {
+            throw new ConfigException("Cannot create consumer",ex);
+        }
     }
+
+    public ProcessLogLogin(ConfigConsumer config) throws ConfigException {
+        this(config, DEFAULT_MAXIMUM_THREAD);
+    }
+    
     @Override
     public void run() {
-        try{
-            consumer = new ConsumerLogLogin(constant.KafkaConstantString.TOPIC_LOG_LOGIN,config);
-        }
-        catch(ConfigException ex){
-            System.out.println("Error when create consumer"+ex.getMessage());
-            System.exit(0);
-        }
+        excutor = Executors.newFixedThreadPool(maximumThread);
         while(true){
             try{
-                ExecutorService excutor = Executors.newFixedThreadPool(MAXIMUM_THREAD);
+                
                 ArrayList<LogLogin> list = (ArrayList<LogLogin>) consumer.poolLog(0);
                 if (list.size()>0) {
                     for(LogLogin log:list){
-                        System.out.println(log.parse2String());
+//                        logger.info(log.parse2String());
                         excutor.submit(new WorkerLogLogin(log));
                     }
                 }
     
             }catch(Exception ex){
-                logger.error(ex.getMessage());
+                logger.error(ex.getMessage(),ex);
             }
         }
     }

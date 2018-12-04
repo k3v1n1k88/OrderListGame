@@ -8,7 +8,9 @@ package task;
 import strategy.calculation.PointCalculation;
 import strategy.calculation.ReCalculation;
 import configuration.ConfigConnectionPool;
-import configuration.ConfigOfSystem;
+import configuration.ConfigFactory;
+import configuration.ConfigSystem;
+import database.connection.DatabaseConnectionPool;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
@@ -18,7 +20,6 @@ import exception.PoolException;
 import object.log.LogLandingPage;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
@@ -31,22 +32,6 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
 
     private static final Logger logger = Logger.getLogger(WorkerLogLandingPage.class);
     
-    private static ConfigOfSystem configSystem;
-    
-    private static DatabaseConnectionPoolRedis pool;
-    
-    static{
-        try {
-            ConfigConnectionPool config = new ConfigConnectionPool();
-            DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
-            pool = new DatabaseConnectionPoolRedis(factory,config);
-            configSystem = new ConfigOfSystem();
-        } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
-            System.exit(0);
-        }
-    }
-    
     public WorkerLogLandingPage(LogLandingPage log){
         super(log);
     }
@@ -56,7 +41,7 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
         DatabaseRedisConnection dbcnn = null;
         
         try {
-            dbcnn = pool.borrowObjectFromPool();
+            dbcnn = poolRedis.borrowObjectFromPool();
             Jedis jedis = dbcnn.getConnection();
             Set<String> gameIDList = jedis.keys(log.getSession());
             Iterator<String> ite = gameIDList.iterator();
@@ -77,14 +62,12 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
                 jedis.hset(log.getSession(), gameID, scoreValue.toJSONString());
                         
             }
-        } catch (PoolException ex) {
-            logger.error(ex);
-        } catch (CalculationException ex) {
+        } catch (PoolException | CalculationException ex) {
             logger.error(ex);
         } finally{
             try {
                 if(dbcnn != null)
-                    pool.returnObjectToPool(dbcnn);
+                    poolRedis.returnObjectToPool(dbcnn);
             } catch (PoolException ex) {
                 logger.error(ex.getMessage());
             }

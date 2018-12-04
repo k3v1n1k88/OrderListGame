@@ -10,7 +10,6 @@ package object.log;
  * @author root
  */
 public interface Log {
-    
     // Help producer Kafka can access with Log instance;
     public String parse2String();
     

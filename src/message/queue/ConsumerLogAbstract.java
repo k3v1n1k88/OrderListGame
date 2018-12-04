@@ -8,7 +8,6 @@ package message.queue;
 import configuration.ConfigConsumer;
 import exception.ConfigException;
 import object.log.Log;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +24,7 @@ import org.apache.log4j.Logger;
  * @param <K> : key
  * @param <V> : message
  */
-public abstract class ConsumerLogAbstract<K extends Object,V extends Log>  {
+public abstract class ConsumerLogAbstract<K extends Object,V extends Log> extends KafkaLogAbstract {
     
     private static final Logger LOGGER = Logger.getLogger(ConsumerLogAbstract.class);
     
@@ -43,9 +42,11 @@ public abstract class ConsumerLogAbstract<K extends Object,V extends Log>  {
         this.topics = topics;
         this.clientID = clientID;
         this.groupID = groupID;
+        
         if(configConsumer == null){
-            throw new ConfigException("Error happen when load config");
+            throw new ConfigException("Get null config");
         }
+        
         this.config = configConsumer;
         
         Properties props = new Properties();

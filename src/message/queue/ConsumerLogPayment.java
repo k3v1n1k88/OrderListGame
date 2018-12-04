@@ -19,6 +19,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
  */
 public class ConsumerLogPayment extends ConsumerLogAbstract<String,LogPayment> {
     
+    private static final String CLIENT_ID = "Log Payment";
+    private static final String GROUP_ID = "Log Payment";
+    
     public ConsumerLogPayment(List<String> topics, String clientID, String groupID, ConfigConsumer configConsumer) throws ConfigException {
         super(topics, clientID, groupID, serialization.LogPaymentDeserializer.class.getName(),configConsumer);
     }
@@ -28,7 +31,7 @@ public class ConsumerLogPayment extends ConsumerLogAbstract<String,LogPayment> {
     }
 
     public ConsumerLogPayment(String topic, ConfigConsumer config) throws ConfigException  {
-        this(topic,DEFAULT_CLIENT_ID,DEFAULT_GROUP_ID, config);
+        this(topic, CLIENT_ID, GROUP_ID, config);
     }
     
     @Override
@@ -40,4 +43,5 @@ public class ConsumerLogPayment extends ConsumerLogAbstract<String,LogPayment> {
         }
         return listPayment;
     }
+    
 }

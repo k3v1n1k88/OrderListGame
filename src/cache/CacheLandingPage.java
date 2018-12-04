@@ -7,7 +7,7 @@ package cache;
 
 import configuration.ConfigCache;
 import configuration.ConfigConnectionPool;
-import configuration.ConfigOfSystem;
+    import configuration.ConfigSystem;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
@@ -56,7 +56,7 @@ public class CacheLandingPage {
     private static final String VISUAL_KEY = "list";
     
     private static DatabaseConnectionPoolRedis pool;
-    private static ConfigOfSystem configSystem;
+    private static ConfigSystem configSystem;
     private static CacheLandingPage instance;
     
     private LoadingCache<String,ListGame> cacheLandingPage;
@@ -78,7 +78,7 @@ public class CacheLandingPage {
             ConfigConnectionPool config = new ConfigConnectionPool();
             DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
             pool = new DatabaseConnectionPoolRedis(factory,config);
-            configSystem = new ConfigOfSystem();
+            configSystem = new ConfigSystem();
         } catch (ConfigException ex) {
             System.out.println(ex.getMessage());
             logger.info(ex.getMessage());
@@ -112,8 +112,14 @@ public class CacheLandingPage {
                 ExecutorService executor = Executors.newFixedThreadPool(1);
                 ListenableFutureTask<List<String>> taskGetList = ListenableFutureTask.create(new Callable<List<String>>() {
                     @Override
-                    public List<String> call() throws PoolException {
-                        return loadDataRecommendationGameHelper();
+                    public List<String> call() throws PoolException, DatabaseException {
+                        List<String> listGame = loadDataRecommendationGameHelper();
+                        if(listGame != null){
+                            return listGame;
+                        }
+                        else{
+                            throw new DatabaseException("Cannot load list recommendation game");
+                        }
                     }
                 });
                 executor.execute(taskGetList);

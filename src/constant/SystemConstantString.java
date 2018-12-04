@@ -12,7 +12,7 @@ package constant;
 public class SystemConstantString {
     
     // For identifying system node config
-    public static final String SYSTEM = "sytem";
+    public static final String SYSTEM_NODE = "system";
     
     
     /****************************************************************************/

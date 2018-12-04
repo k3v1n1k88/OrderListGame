@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  *
  * @author root
  */
-public abstract class ProducerLogAbstract<K extends Object, V extends Object> {
+public abstract class ProducerLogAbstract<K extends Object, V extends Object> extends KafkaLogAbstract {
     
     private static final Logger logger = Logger.getLogger(ProducerLogAbstract.class);
     
@@ -28,8 +28,9 @@ public abstract class ProducerLogAbstract<K extends Object, V extends Object> {
     
     private KafkaProducer<K,V> producer;
     protected ConfigProducer config;
+    protected Properties props;
 
-    protected static final String DEFAULT_CLIENT_ID = "vng.com.vn";
+//    protected static final String DEFAULT_CLIENT_ID = "vng.com.vn";
     
     public ProducerLogAbstract(String topic, String clientID, String pathFileSerializer, ConfigProducer configProducer) throws ConfigException{
         
@@ -41,9 +42,11 @@ public abstract class ProducerLogAbstract<K extends Object, V extends Object> {
         this.topic = topic;
         this.clientID = clientID;
         
-        Properties props = new Properties();
+        props = new Properties();
         
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, clientID);
+        if(clientID != null){
+            props.put(ProducerConfig.CLIENT_ID_CONFIG, clientID);
+        }
         
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         
@@ -80,12 +83,12 @@ public abstract class ProducerLogAbstract<K extends Object, V extends Object> {
     }
     
     public ProducerLogAbstract(String topic, String pathFileSerializer, ConfigProducer configProducer ) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID, pathFileSerializer, configProducer);
+        this(topic, null, pathFileSerializer, configProducer);
         
     }
     
     public ProducerLogAbstract(String topic, String pathFileSerializer) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID,pathFileSerializer, new ConfigProducer());
+        this(topic, null, pathFileSerializer, ConfigProducer.getInstance());
     }
     
     

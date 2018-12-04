@@ -5,19 +5,44 @@
  */
 package configuration;
 
+import database.connection.DatabaseConnection;
+import database.connection.DatabaseLevelDBConnection;
 import exception.ConfigException;
+import exception.DatabaseException;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
+import org.fusesource.leveldbjni.JniDBFactory;
 import org.iq80.leveldb.CompressionType;
+import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBComparator;
+import org.iq80.leveldb.DBFactory;
+import org.iq80.leveldb.Options;
+import static org.iq80.leveldb.impl.Iq80DBFactory.asString;
+import static org.iq80.leveldb.impl.Iq80DBFactory.bytes;
 
 /**
  *
  * @author root
  */
-public class ConfigDatabaseLevelDB extends ConfigurationAbstract {
+public class ConfigDatabaseLevelDB extends ConfigAbstract {
     
     private static final Logger logger = Logger.getLogger(ConfigDatabaseLevelDB.class);
     
+    private static final boolean DEFAULT_CREATE_IF_MISSING = true ;
+    private static final boolean DEFAULT_ERROR_IF_EXISTS = false;
+    private static final int DEFAULT_WRITE_BUFFER_SIZE = 4<<20;
+    private static final int DEFAULT_MAX_OPEN_FILES = 10000;
+    private static final int DEFAULT_BLOCK_RESTART_INTERVAL = 16;
+    private static final int DEFAULT_BLOCK_SIZE = 4*1024;
+    private static final long DEFAULT_CACHE_SIZE = 100 * 1048576;
+    private static final boolean DEFAULT_COMPRESSION = false;
+    private static final boolean DEFAULT_VERIFY_CHECKSUMS = false;
+    private static final boolean DEFAULT_PARANOID_CHECKS = false;
+    private static final String DEFAULT_DATABASE_NAME = "MappedLogPayment";
+    
+    private String databaseName;
     private boolean createIfMissing ;
     private boolean errorIfExists ;
     private int writeBufferSize ;
@@ -28,12 +53,11 @@ public class ConfigDatabaseLevelDB extends ConfigurationAbstract {
     private boolean compression;
     private boolean verifyChecksums ;
     private boolean paranoidChecks ;
-    
-    private Logger log = null;
+    private org.iq80.leveldb.Logger log = null;
 
     public ConfigDatabaseLevelDB(String pathFileConfig) throws ConfigException{
         super(pathFileConfig,constant.DBConstantString.DATABASE_LEVELDB);
-        
+        this.databaseName = this.prefs.get(constant.DBConstantString.DATABASE_NAME, DEFAULT_DATABASE_NAME);
         this.createIfMissing = this.prefs.getBoolean(constant.DBConstantString.CREATE_IF_MISSING_CONFIG, ConfigDatabaseLevelDB.DEFAULT_CREATE_IF_MISSING);
         this.errorIfExists = this.prefs.getBoolean(constant.DBConstantString.ERROR_IF_EXISTS_CONFIG, ConfigDatabaseLevelDB.DEFAULT_ERROR_IF_EXISTS);
         this.writeBufferSize = this.prefs.getInt(constant.DBConstantString.WRITE_BUFFER_SIZE_CONFIG, ConfigDatabaseLevelDB.DEFAULT_WRITE_BUFFER_SIZE);
@@ -44,29 +68,13 @@ public class ConfigDatabaseLevelDB extends ConfigurationAbstract {
         this.compression= this.prefs.getBoolean(constant.DBConstantString.COMPRESSION_CONFIG, ConfigDatabaseLevelDB.DEFAULT_COMPRESSION);
         this.verifyChecksums = this.prefs.getBoolean(constant.DBConstantString.VERIFY_CHECKSUMS_CONFIG, ConfigDatabaseLevelDB.DEFAULT_VERIFY_CHECKSUMS);
         this.paranoidChecks = this.prefs.getBoolean(constant.DBConstantString.PARANOID_CHECKS_CONFIG, ConfigDatabaseLevelDB.DEFAULT_PARANOID_CHECKS);
-        
-        logger.info("Config of leveldb database:"
-            + "\n" + constant.DBConstantString.CREATE_IF_MISSING_CONFIG + ":" + this.createIfMissing
-            + "\n" + constant.DBConstantString.ERROR_IF_EXISTS_CONFIG + ":" + this.errorIfExists
-            + "\n" + constant.DBConstantString.WRITE_BUFFER_SIZE_CONFIG + ":" + this.writeBufferSize
-            + "\n" + constant.DBConstantString.MAX_OPEN_FILES_CONFIG + ":" + this.maxOpenFiles
-            + "\n" + constant.DBConstantString.BLOCK_RESTART_INTERVAL_CONFIG + ":" + this.blockRestartInterval
-            + "\n" + constant.DBConstantString.BLOCK_SIZE_CONFIG + ":" + this.blockSize
-            + "\n" + constant.DBConstantString.CACHE_SIZE_CONFIG + ":" + this.cacheSize
-            + "\n" + constant.DBConstantString.COMPRESSION_CONFIG + ":" + this.compression
-            + "\n" + constant.DBConstantString.VERIFY_CHECKSUMS_CONFIG + ":" + this.verifyChecksums
-            + "\n" + constant.DBConstantString.PARANOID_CHECKS_CONFIG + ":" + this.paranoidChecks
-        );
+
     }
     
-    public void setLogger(Logger logger){
+    public void setLogger(org.iq80.leveldb.Logger logger){
         if(logger!=null){
             this.log = logger ;
         }
-    }
-    
-    public static Logger getLogger() {
-        return logger;
     }
 
     public boolean isCreateIfMissing() {
@@ -109,19 +117,49 @@ public class ConfigDatabaseLevelDB extends ConfigurationAbstract {
         return paranoidChecks;
     }
 
-    public Logger getLog() {
+    public org.iq80.leveldb.Logger getLog() {
         return log;
     }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
     
-    
-    private static final boolean DEFAULT_CREATE_IF_MISSING = true ;
-    private static final boolean DEFAULT_ERROR_IF_EXISTS = false;
-    private static final int DEFAULT_WRITE_BUFFER_SIZE = 4<<20;
-    private static final int DEFAULT_MAX_OPEN_FILES = 10000;
-    private static final int DEFAULT_BLOCK_RESTART_INTERVAL = 16;
-    private static final int DEFAULT_BLOCK_SIZE = 4*1024;
-    private static final long DEFAULT_CACHE_SIZE = 100 * 1048576;
-    private static final boolean DEFAULT_COMPRESSION = false;
-    private static final boolean DEFAULT_VERIFY_CHECKSUMS = false;
-    private static final boolean DEFAULT_PARANOID_CHECKS = false;
+
+    @Override
+    public void showConfig() {
+        logger.info("Config of leveldb database:"
+            + "\n" + constant.DBConstantString.DATABASE_NAME + ":" + this.databaseName
+            + "\n" + constant.DBConstantString.CREATE_IF_MISSING_CONFIG + ":" + this.createIfMissing
+            + "\n" + constant.DBConstantString.ERROR_IF_EXISTS_CONFIG + ":" + this.errorIfExists
+            + "\n" + constant.DBConstantString.WRITE_BUFFER_SIZE_CONFIG + ":" + this.writeBufferSize
+            + "\n" + constant.DBConstantString.MAX_OPEN_FILES_CONFIG + ":" + this.maxOpenFiles
+            + "\n" + constant.DBConstantString.BLOCK_RESTART_INTERVAL_CONFIG + ":" + this.blockRestartInterval
+            + "\n" + constant.DBConstantString.BLOCK_SIZE_CONFIG + ":" + this.blockSize
+            + "\n" + constant.DBConstantString.CACHE_SIZE_CONFIG + ":" + this.cacheSize
+            + "\n" + constant.DBConstantString.COMPRESSION_CONFIG + ":" + this.compression
+            + "\n" + constant.DBConstantString.VERIFY_CHECKSUMS_CONFIG + ":" + this.verifyChecksums
+            + "\n" + constant.DBConstantString.PARANOID_CHECKS_CONFIG + ":" + this.paranoidChecks
+        );
+    }
+    @Override
+    public void checkConfig() throws ConfigException {
+        DatabaseLevelDBConnection dbcnn = null;
+        try {
+            dbcnn = new DatabaseLevelDBConnection(this);
+            dbcnn.createConnection();
+            if( dbcnn.ping() == false){
+                throw new ConfigException("Cannot connect database");
+            }
+        } catch (DatabaseException ex) {
+            throw new ConfigException("Cannot connect database", ex);
+        } finally{
+            if(dbcnn!=null)
+                try {
+                    dbcnn.close();
+                } catch (DatabaseException ex) {
+                throw new ConfigException("Cannot close database after check",ex);
+            }
+        }
+    }
 }

@@ -7,8 +7,11 @@ package task;
 
 import strategy.calculation.AddMoreScorePaymentCalculation;
 import configuration.ConfigConnectionPool;
-import configuration.ConfigOfSystem;
+import configuration.ConfigDatabaseLevelDB;
+import configuration.ConfigFactory;
+import configuration.ConfigSystem;
 import configuration.ConfigScribe;
+import database.connection.DatabaseConnectionPool;
 import database.connection.DatabaseConnectionPoolLevelDB;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseLevelDBConnection;
@@ -17,12 +20,14 @@ import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
 import exception.CalculationException;
 import exception.ConfigException;
+import exception.DatabaseException;
 import exception.PoolException;
 import java.util.ArrayList;
 import object.log.LogPayment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import object.value.database.MappingValueWrapper;
 import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
@@ -39,32 +44,24 @@ import zcore.utilities.ScribeServiceClient;
 public class WorkerLogPayment extends WorkerAbstract<LogPayment> {
 
     private static final Logger logger = Logger.getLogger(WorkerLogPayment.class);
-
-    private static DatabaseConnectionPoolRedis poolRedis;
-    private static DatabaseConnectionPoolLevelDB poolLevelDB;
-
-    private static ConfigOfSystem configSystem;
+    
+    private static DatabaseLevelDBConnection dbcnnLevelDB;
+    
     private static ConfigScribe configScribe;
 
     static {
         try {
-            // Read config of system
-            configSystem = new ConfigOfSystem();
-            configScribe = new ConfigScribe();
-
-            // Initialize connection pool Redis
-            ConfigConnectionPool configPoolRedis = new ConfigConnectionPool();
-            DatabaseRedisConnectionFactory factoryRedis = new DatabaseRedisConnectionFactory();
-            poolRedis = new DatabaseConnectionPoolRedis(factoryRedis, configPoolRedis);
-
             // Initialize connection pool LevelDB
-            ConfigConnectionPool configPoolLevelDB = new ConfigConnectionPool();
-            DatabaseLevelDBConnectionFactory factoryLevelDB = new DatabaseLevelDBConnectionFactory(constant.DBConstantString.DATABASE_MAPPING_NAME);
-            poolLevelDB = new DatabaseConnectionPoolLevelDB(factoryLevelDB, configPoolLevelDB);
-
+            ConfigConnectionPool configPoolLevelDB = configPool;
+            ConfigDatabaseLevelDB configDatabaseLevelDB = ConfigFactory.getConfigDatabaseLevelDB(constant.PathConstant.PATH_TO_DATABASE_LEVELDB_CONFIG_FILE);
+            dbcnnLevelDB = new DatabaseLevelDBConnection(configDatabaseLevelDB);
+            dbcnnLevelDB.createConnection();
+            
+            configScribe = ConfigFactory.getConfigScribe(constant.PathConstant.PATH_TO_SCRIBE_CONFIG_FILE);
         } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
-            System.exit(0);
+            logger.error("Cannot create worker", ex);
+        } catch (DatabaseException ex) {
+            logger.info("Cannot create connection to database level DB", ex);
         }
     }
 
@@ -88,12 +85,19 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment> {
             // If mapping missing
             if (session == null) {
                 // Write log sribe
-                ScribeServiceClient.getInstance(configScribe.getHost(),
+                boolean res = ScribeServiceClient.getInstance(configScribe.getHost(),
                         configScribe.getPort(),
                         configScribe.getHost(),
                         configScribe.getPort(),
-                        10, 5, 1, 10000
-                ).writeLog2(configScribe.getCetegory(), log.toString());
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                ).writeLog2(configScribe.getCategory(), this.log.parse2String());
+                if(res == false){
+                    logger.error("Cannot write to scribe"
+                            +"\n"+log.parse2String());
+                }
             } else {
                 // Update database Scoring
                 jedis.select(constant.DBConstantString.DATABASE_SCORING_INDEX);
@@ -125,8 +129,9 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment> {
                     jedis.hset(session, log.getGameID(), scoreWrapper.toJSONString());
 
                     // Write to database MappedLogPayment
-                    dbLevelDBcnn = poolLevelDB.borrowObjectFromPool();
-                    DB db = dbLevelDBcnn.getConnection();
+//                    dbLevelDBcnn = dbcnnLevelDB.borrowObjectFromPool();
+//                    dbcnnLevelDB.createConnection();
+                    DB db = dbcnnLevelDB.getConnection();
 
                     String info = asString(db.get(bytes(session)));
                     MappingValueWrapper mappingValue;
@@ -169,16 +174,49 @@ public class WorkerLogPayment extends WorkerAbstract<LogPayment> {
                 }
             }
         } catch (PoolException ex) {
-            logger.error(ex);
+            logger.error(ex.getMessage(),ex);
+            ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                ).writeLog2("LogPaymentErrorByPool", this.log.parse2String());
         } catch (CalculationException ex) {
-            logger.error(ex);
+            logger.error(ex.getMessage(),ex);
+            ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                ).writeLog2("LogPaymentErrorByCalculation", this.log.parse2String());
+        } catch (DatabaseException ex) {
+            logger.error(ex.getMessage(),ex);
+            ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                ).writeLog2("LogPaymentErrorMapped", this.log.parse2String());
         } finally {
             try {
                 if (dbRediscnn != null) {
                     poolRedis.returnObjectToPool(dbRediscnn);
                 }
-                if (dbLevelDBcnn != null) {
-                    poolLevelDB.returnObjectToPool(dbLevelDBcnn);
+                if (dbcnnLevelDB != null) {
+//                    try {
+//                        dbcnnLevelDB.close();
+//                    } catch (DatabaseException ex) {
+//                        logger.error("Cannot close after write", ex);
+//                    }
                 }
             } catch (PoolException ex) {
                 logger.error(ex.getMessage());

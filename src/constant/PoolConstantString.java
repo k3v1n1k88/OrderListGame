@@ -11,7 +11,7 @@ package constant;
  */
 public final class PoolConstantString {
     
-    public static final String CONNECTION_POOL = "connection_pool";
+    public static final String CONNECTION_POOL_NODE = "connection_pool";
     
     public static final String BLOCK_WHEN_EXHAUSTED = "block_when_exhausted";
 

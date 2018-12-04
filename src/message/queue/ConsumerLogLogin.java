@@ -19,6 +19,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
  */
 public class ConsumerLogLogin extends ConsumerLogAbstract<String,LogLogin>  {
 
+    private static final String CLIENT_ID = "Log Login";
+    private static final String GROUP_ID = "Log Login";
+    
     public ConsumerLogLogin(List<String> topics, String clientID, String groupID, ConfigConsumer configConsumer) throws ConfigException {
         super(topics, clientID, groupID, serialization.LogLoginDeserializer.class.getName(),configConsumer);
     }
@@ -28,11 +31,11 @@ public class ConsumerLogLogin extends ConsumerLogAbstract<String,LogLogin>  {
     }
 
     public ConsumerLogLogin(String topic) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID,DEFAULT_GROUP_ID, new ConfigConsumer());
+        this(topic, CLIENT_ID, GROUP_ID, new ConfigConsumer());
     }
     
     public ConsumerLogLogin(String topic, ConfigConsumer config) throws ConfigException{
-        this(topic,DEFAULT_CLIENT_ID,DEFAULT_GROUP_ID, config);
+        this(topic,CLIENT_ID, GROUP_ID, config);
     }
     
     @Override

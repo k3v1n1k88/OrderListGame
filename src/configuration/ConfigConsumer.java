@@ -9,6 +9,7 @@ import exception.ConfigException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import message.queue.KafkaLogAbstract;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.log4j.Logger;
 
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  *
  * @author root
  */
-public class ConfigConsumer extends ConfigurationAbstract{
+public class ConfigConsumer extends ConfigAbstract{
     
     private static final Logger LOGGER = Logger.getLogger(ConfigConsumer.class);
             
@@ -54,7 +55,7 @@ public class ConfigConsumer extends ConfigurationAbstract{
     
     public ConfigConsumer(String pathFile) throws ConfigException{
         
-        super(pathFile, constant.KafkaConstantString.CONSUMER_KAFKA);
+        super(pathFile, constant.KafkaConstantString.CONSUMER_KAFKA_NODE);
         
         this.autoOffsetReset = this.prefs.get(constant.KafkaConstantString.AUTO_OFFSET_RESET,ConfigConsumer.DEFAULT_AUTO_OFFSET_RESET);
 
@@ -84,24 +85,6 @@ public class ConfigConsumer extends ConfigurationAbstract{
 
         this.sendBufferBytes = this.prefs.get(constant.KafkaConstantString.SEND_BUFFER_BYTES,ConfigConsumer.DEFAULT_SEND_BUFFER_BYTES);
         
-        
-        
-        LOGGER.info("Create consumer with params:"
-                + "\n" + ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + " : " +  this.autoOffsetReset
-                + "\n" + ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " +  this.bootstrapServers
-                + "\n" + ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG + " : " +  this.connectionsMaxIdleMs
-                + "\n" + ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG + " : " +  this.enableAutoCommit
-                + "\n" + ConsumerConfig.FETCH_MAX_BYTES_CONFIG + " : " +  this.fetchMaxBytes
-                + "\n" + ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG + " : " +  this.fetchMaxWaitMs
-                + "\n" + ConsumerConfig.FETCH_MIN_BYTES_CONFIG + " : " +  this.fetchMinBytes
-                + "\n" + ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG + " : " +  this.maxPartitionFetchBytes
-                + "\n" + ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + " : " +  this.maxPollIntervalMs
-                + "\n" + ConsumerConfig.MAX_POLL_RECORDS_CONFIG + " : " +  this.maxPollRecords
-                + "\n" + ConsumerConfig.RECEIVE_BUFFER_CONFIG + " : " +  this.receiveBufferBytes
-                + "\n" + ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG + " : " +  this.requestTimeoutMs
-                + "\n" + ConsumerConfig.RETRY_BACKOFF_MS_CONFIG + " : " +  this.retryBackoffMs
-                + "\n" + ConsumerConfig.SEND_BUFFER_CONFIG + " : " +  this.sendBufferBytes
-        );
     }
 
     public String getAutoOffsetReset() {
@@ -187,5 +170,32 @@ public class ConfigConsumer extends ConfigurationAbstract{
     private static String DEFAULT_RETRY_BACKOFF_MS  = "100";
 
     private static String DEFAULT_SEND_BUFFER_BYTES = "-1";
-    
+
+    @Override
+    public void showConfig() {  
+        
+        LOGGER.info("Create consumer with params:"
+                + "\n" + ConsumerConfig.AUTO_OFFSET_RESET_CONFIG + " : " +  this.autoOffsetReset
+                + "\n" + ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG + " : " +  this.bootstrapServers
+                + "\n" + ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG + " : " +  this.connectionsMaxIdleMs
+                + "\n" + ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG + " : " +  this.enableAutoCommit
+                + "\n" + ConsumerConfig.FETCH_MAX_BYTES_CONFIG + " : " +  this.fetchMaxBytes
+                + "\n" + ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG + " : " +  this.fetchMaxWaitMs
+                + "\n" + ConsumerConfig.FETCH_MIN_BYTES_CONFIG + " : " +  this.fetchMinBytes
+                + "\n" + ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG + " : " +  this.maxPartitionFetchBytes
+                + "\n" + ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG + " : " +  this.maxPollIntervalMs
+                + "\n" + ConsumerConfig.MAX_POLL_RECORDS_CONFIG + " : " +  this.maxPollRecords
+                + "\n" + ConsumerConfig.RECEIVE_BUFFER_CONFIG + " : " +  this.receiveBufferBytes
+                + "\n" + ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG + " : " +  this.requestTimeoutMs
+                + "\n" + ConsumerConfig.RETRY_BACKOFF_MS_CONFIG + " : " +  this.retryBackoffMs
+                + "\n" + ConsumerConfig.SEND_BUFFER_CONFIG + " : " +  this.sendBufferBytes
+        );
+    }
+    @Override
+    public void checkConfig() throws ConfigException {
+        boolean check = KafkaLogAbstract.checkConnect(this.bootstrapServers, 10000, 5000);
+        if (check == false) {
+            throw new ConfigException("Cannot find topic with this config");
+        }
+    }
 }

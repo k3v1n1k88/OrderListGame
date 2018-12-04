@@ -12,38 +12,36 @@ import message.queue.ConsumerLogPayment;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author root
  */
-public class ProcessLogPayment implements Runnable{
+public class ProcessLogPayment extends ProcessLogAbstract{
     
-    private static final Logger logger = Logger.getLogger(ProcessLogPayment.class);
-    private ConfigConsumer config;
-    ConsumerLogPayment consumer;
-    private static final int MAXIMUM_THREAD = 100;
+    public ProcessLogPayment(ConfigConsumer config, int maximumThread) throws ConfigException{
+        super(config,maximumThread);
+        try {
+            consumer = new ConsumerLogPayment(constant.KafkaConstantString.TOPIC_LOG_PAYMENT,config);
+        } catch (ConfigException ex) {
+            throw new ConfigException("Cannot create consumer", ex);
+        }
+    }
     
-    public ProcessLogPayment(ConfigConsumer config){
-        this.config = config;
+    public ProcessLogPayment(ConfigConsumer config) throws ConfigException{
+        this(config, DEFAULT_MAXIMUM_THREAD);
     }
     @Override
     public void run() {
-        try{
-            consumer = new ConsumerLogPayment(constant.KafkaConstantString.TOPIC_LOG_PAYMENT,config);
-        }
-        catch(ConfigException ex){
-            System.out.println("Error when create consumer"+ex.getMessage());
-            System.exit(0);
-        }
         while(true){
+            excutor = Executors.newFixedThreadPool(maximumThread);
             try{
-                ExecutorService excutor = Executors.newFixedThreadPool(MAXIMUM_THREAD);
                 ArrayList<LogPayment> list = (ArrayList<LogPayment>) consumer.poolLog(0);
                 if (list.size()>0) {
                     for(LogPayment log:list){
-                        System.out.println(log.parse2String());
+//                        logger.info(log.parse2String());
                         excutor.submit(new WorkerLogPayment(log));
                     }
                 }

@@ -5,6 +5,7 @@
  */
 package database.connection;
 
+import exception.PoolException;
 import java.util.Set;
 
 /**
@@ -14,15 +15,15 @@ import java.util.Set;
  */
 public interface DatabaseConnectionPool<T extends DatabaseConnection> {
     
-    public T borrowObjectFromPool() throws Exception;
+    public T borrowObjectFromPool() throws PoolException;
     
-    public void returnObjectToPool(T obj) throws Exception;
+    public void returnObjectToPool(T obj) throws PoolException;
     
-    public void invalidateObjectOfPool(T obj) throws Exception;
+    public void invalidateObjectOfPool(T obj) throws PoolException;
     
-    public void closePool() throws Exception;
+    public void closePool() throws PoolException;
     
-    public void clearPool() throws Exception;
+    public void clearPool() throws PoolException;
     
     public boolean isClosedPool();
  

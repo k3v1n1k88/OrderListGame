@@ -6,8 +6,10 @@
 package bussiness;
 
 import configuration.ConfigConsumer;
+import configuration.ConfigFactory;
+import configuration.ConfigServer;
 import exception.ConfigException;
-import task.ProcessLandingPage;
+import task.ProcessLogLandingPage;
 import task.ProcessLogLogin;
 import task.ProcessLogPayment;
 import org.apache.log4j.Logger;
@@ -24,13 +26,28 @@ public class ServiceDaemon {
     public static void main(String[] args) {
         try{
             ListOrderGameServer listOrderGameServer = ListOrderGameServer.getInstance();
-            ConfigConsumer conf = new ConfigConsumer();
+            
+            // Initilaize config
+            ConfigFactory.initConfigConnectionPool(constant.PathConstant.PATH_TO_POOL_CONFIG_FILE);
+            ConfigFactory.initConfigConsumer(constant.PathConstant.PATH_TO_CONSUMER_CONFIG_FILE);
+            ConfigFactory.initConfigDatabaseLevelDB(constant.PathConstant.PATH_TO_DATABASE_LEVELDB_CONFIG_FILE);
+            ConfigFactory.initConfigDatabaseRedis(constant.PathConstant.PATH_TO_DATABASE_REDIS_CONFIG_FILE);
+            ConfigFactory.initConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
+            ConfigFactory.initConfigScribe(constant.PathConstant.PATH_TO_SCRIBE_CONFIG_FILE);
+            ConfigFactory.initConfigServer(constant.PathConstant.PATH_TO_SERVER_CONFIG_FILE);
+            ConfigFactory.initConfigSystem(constant.PathConstant.PATH_TO_SYSTEM_CONFIG_FILE);
+            
+            ConfigConsumer configConsumer = ConfigFactory.getConfigConsumer(constant.PathConstant.PATH_TO_CONSUMER_CONFIG_FILE);
+            ConfigServer configServer = ConfigFactory.getConfigServer(constant.PathConstant.PATH_TO_SERVER_CONFIG_FILE);
+            
             new Thread(listOrderGameServer).start();
-            new Thread(new ProcessLogPayment(conf)).start();
-            new Thread(new ProcessLandingPage(conf)).start();
-            new Thread(new ProcessLogLogin(conf)).start();
+            new Thread(new ProcessLogPayment(configConsumer, configServer.getMaxThreadProcess())).start();
+            new Thread(new ProcessLogLandingPage(configConsumer, configServer.getMaxThreadProcess())).start();
+            new Thread(new ProcessLogLogin(configConsumer, configServer.getMaxThreadProcess())).start();
+            
         }catch(ConfigException cex){
-            System.out.println("Cannot start server because have problem with config");
+            logger.error("Cannot load config from file",cex);
+            System.exit(0);
         }
         
     }

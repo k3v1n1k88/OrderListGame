@@ -8,8 +8,9 @@ package task;
 import strategy.calculation.AddMoreScoreLoginCalculation;
 import strategy.calculation.PointCalculation;
 import configuration.ConfigConnectionPool;
-import configuration.ConfigOfSystem;
+import configuration.ConfigSystem;
 import constant.SystemConstant;
+import database.connection.DatabaseConnectionPool;
 import database.connection.DatabaseConnectionPoolRedis;
 import database.connection.DatabaseRedisConnection;
 import database.connection.DatabaseRedisConnectionFactory;
@@ -34,23 +35,6 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
     
     private static final Logger logger = Logger.getLogger(WorkerLogLogin.class);
     
-    private static ConfigOfSystem configSystem;
-    
-    private static DatabaseConnectionPoolRedis pool;
-
-    
-    static{
-        try {
-            ConfigConnectionPool config = new ConfigConnectionPool();
-            DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
-            pool = new DatabaseConnectionPoolRedis(factory,config);
-            configSystem = new ConfigOfSystem();
-        } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
-            System.exit(0);
-        }
-    }
-    
     public WorkerLogLogin(LogLogin log){
         super(log);
     }
@@ -60,7 +44,7 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
         DatabaseRedisConnection dbcnn = null;
         try {
             // Get session in DB
-            dbcnn = pool.borrowObjectFromPool();
+            dbcnn = poolRedis.borrowObjectFromPool();
             Jedis jedis = dbcnn.getConnection();
             String info = jedis.hget(log.getSession(), log.getGameID());
             
@@ -139,7 +123,7 @@ public class WorkerLogLogin extends WorkerAbstract<LogLogin> {
         } finally{
             if(dbcnn!=null){
                 try {
-                    pool.returnObjectToPool(dbcnn);
+                    poolRedis.returnObjectToPool(dbcnn);
                 } catch (PoolException ex) {
                     logger.error(ex.getMessage());
                 }

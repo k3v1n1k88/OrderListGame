@@ -5,15 +5,17 @@
  */
 package database.connection;
 
+import exception.DatabaseException;
+
 /**
  *
  * @author root
  */
 public interface DatabaseConnection {
     
-    void createConnection() throws Exception;
+    void createConnection() throws DatabaseException;
     
-    void close()throws Exception;
+    void close()throws DatabaseException;
     
     boolean ping();
 }

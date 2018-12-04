@@ -5,6 +5,7 @@
  */
 package database.connection;
 
+import configuration.ConfigDatabaseLevelDB;
 import exception.DatabaseException;
 import org.iq80.leveldb.*;
 import static org.fusesource.leveldbjni.JniDBFactory.*;
@@ -40,6 +41,21 @@ public class DatabaseLevelDBConnection implements DatabaseConnection{
         this(new DatabaseInfo(databasename));
     }
     
+    public DatabaseLevelDBConnection(ConfigDatabaseLevelDB config){
+        this(config.getDatabaseName(),
+                config.isCreateIfMissing(),
+                config.isErrorIfExists(),
+                config.getWriteBufferSize(),
+                config.getMaxOpenFiles(),
+                config.getBlockRestartInterval(),
+                config.getBlockSize(),
+                config.getCacheSize(),
+                config.isCompression(),
+                config.isVerifyChecksums(),
+                config.isParanoidChecks(),
+                config.getLog());
+    }
+    
     public DatabaseLevelDBConnection(String databaseName,
                                 boolean createIfMissing,
                                 boolean errorIfExists,
@@ -67,7 +83,7 @@ public class DatabaseLevelDBConnection implements DatabaseConnection{
                 logger);
     }
     
-        public DatabaseLevelDBConnection(String databaseName,
+    public DatabaseLevelDBConnection(String databaseName,
                                 boolean createIfMissing,
                                 boolean errorIfExists,
                                 int writeBufferSize,
@@ -138,17 +154,17 @@ public class DatabaseLevelDBConnection implements DatabaseConnection{
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws DatabaseException {
         if(this.connection != null){
             try{
                 this.connection.close();
             }catch(IOException ex){
-                throw new DBException("Cannot close database",ex);
+                throw new DatabaseException("Cannot close database",ex);
             }
         }
     }
     
-    public DB getConnection(){
+    public DB getConnection() throws DatabaseException{
         return this.connection;
     }
 

@@ -5,7 +5,7 @@
  */
 package strategy.calculation;
 
-import configuration.ConfigOfSystem;
+import configuration.ConfigSystem;
 import exception.CalculationException;
 import exception.ConfigException;
 import org.apache.log4j.Logger;
@@ -18,7 +18,7 @@ public abstract class PointCalculation {
     
     protected static final Logger logger = Logger.getLogger(PointCalculation.class);
     
-    static ConfigOfSystem configOfSystem;
+    static ConfigSystem configOfSystem;
     
     protected long currentPoint;
     protected long latestLoginTime;
@@ -26,7 +26,7 @@ public abstract class PointCalculation {
     
     static{
         try {
-            configOfSystem = new ConfigOfSystem();
+            configOfSystem = new ConfigSystem();
         } catch (ConfigException ex) {
             logger.error("Error when create config of system");
             System.exit(0);

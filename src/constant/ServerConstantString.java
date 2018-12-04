@@ -17,6 +17,13 @@ public class ServerConstantString {
     
     public static final String PORT_CONFIG = "port";
     
+    public static final String MAX_THREAD = "max_thread";
+    
+    public static final String MIN_THREAD = "min_thread";
+    
+    public static final String IDLE_TIMEOUT = "idle_timeout";
+    
+    public static final String MAX_THREAD_PROCESS = "max_thread_process";
     
     private ServerConstantString(){}
 }

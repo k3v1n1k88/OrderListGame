@@ -8,6 +8,7 @@ package handler;
 import api.ApiOutput;
 import api.ApiServlet;
 import cache.CacheLandingPage;
+import configuration.ConfigFactory;
 import configuration.ConfigProducer;
 import exception.ConfigException;
 import java.util.concurrent.ExecutionException;
@@ -33,12 +34,10 @@ public class LandingPageController extends ApiServlet{
     
     static {
         try {
-            configProducer = new ConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
+            configProducer = ConfigFactory.getConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
             cache = CacheLandingPage.getInstance();
         } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
-            logger.error(ex);
-            System.exit(0);
+            logger.info(ex);
         }
     }
     

@@ -15,9 +15,9 @@ public class KafkaConstantString {
     
     public static final String CLIEN_ID= "client_id";
     
-    public static final String CONSUMER_KAFKA = "consumer_kafka";
+    public static final String CONSUMER_KAFKA_NODE = "consumer_kafka";
     
-    public static final String PRODUCER_KAFKA = "producer_kafka";
+    public static final String PRODUCER_KAFKA_NODE = "producer_kafka";
     
     public static final String ACKS = "acks";
     

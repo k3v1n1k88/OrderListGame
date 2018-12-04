@@ -121,7 +121,6 @@ public class DatabaseRedisConnection implements DatabaseConnection{
                                                     this.connectionTimeout,
                                                     this.soTimeout,
                                                     Sharded.DEFAULT_WEIGHT);
-            
             this.connection = new Jedis(info);
             try {
                 this.connection.connect();

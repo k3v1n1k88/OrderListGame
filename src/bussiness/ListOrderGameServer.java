@@ -5,13 +5,16 @@
  */
 package bussiness;
 
+import configuration.ConfigFactory;
 import configuration.ConfigServer;
+import exception.ConfigException;
 import handler.LandingPageController;
 import handler.LogLoginController;
 import handler.LogPaymentController;
 import handler.RecommendationController;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -22,6 +25,7 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 /**
  *
@@ -31,13 +35,26 @@ public class ListOrderGameServer implements Runnable{
     
     private static final Logger logger = Logger.getLogger(ListOrderGameServer.class);
     
-    private final Server server = new Server();
-    
+    private final Server server;
+    private final ConfigServer configServer;
     private static ListOrderGameServer _instance = null;
     private static final Lock createLock_ = new ReentrantLock();
     public static ServerConnector connector;
+    
+    private ListOrderGameServer() throws ConfigException{
+        try {
+            configServer = ConfigFactory.getConfigServer(constant.PathConstant.PATH_TO_SERVER_CONFIG_FILE);
+            QueuedThreadPool threadPool = new QueuedThreadPool(configServer.getMaxThread(), 
+                    configServer.getMinThread(), 
+                    configServer.getIdleTimeout());
+            server = new Server(threadPool);
+        } catch (ConfigException ex) {
+            logger.error("Cannot read config server");
+            throw ex;
+        }
+    }
 
-    public static ListOrderGameServer getInstance() {
+    public static ListOrderGameServer getInstance() throws ConfigException {
         if (_instance == null) {
             createLock_.lock();
             try {
@@ -54,11 +71,15 @@ public class ListOrderGameServer implements Runnable{
     @Override
     public void run() {
         try {
+            
             this.connector = new ServerConnector(server);
+            
             ConfigServer configServer = new ConfigServer(constant.PathConstant.PATH_TO_SERVER_CONFIG_FILE);
+            
             connector.setPort(configServer.getPort());
             connector.setHost(configServer.getHost());
             connector.setIdleTimeout(30000);
+            
             server.setConnectors(new Connector[]{connector});
 
             ServletHandler servletHandler = new ServletHandler();

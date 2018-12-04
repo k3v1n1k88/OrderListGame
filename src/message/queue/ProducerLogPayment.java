@@ -5,6 +5,7 @@
  */
 package message.queue;
 
+import configuration.ConfigFactory;
 import configuration.ConfigProducer;
 import exception.ConfigException;
 import object.log.LogPayment;
@@ -22,11 +23,11 @@ public class ProducerLogPayment extends ProducerLogAbstract<String,LogPayment>{
     }
 
     public ProducerLogPayment(String topic) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID,new ConfigProducer());
+        this(topic, ConfigFactory.getConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE));
     }
     
     public ProducerLogPayment(String topic, ConfigProducer configProducer) throws ConfigException {
-        this(topic,DEFAULT_CLIENT_ID,configProducer);
+        super(topic, serialization.LogPaymentSerializer.class.getName(), configProducer);
     }
 
     @Override

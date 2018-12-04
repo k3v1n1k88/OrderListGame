@@ -10,47 +10,47 @@ import exception.ConfigException;
 import object.log.LogLandingPage;
 import message.queue.ConsumerLogLandingPage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import message.queue.ConsumerLogAbstract;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author root
  */
-public class ProcessLandingPage implements Runnable{
+public class ProcessLogLandingPage extends ProcessLogAbstract{
     
-    private static final Logger logger = Logger.getLogger(ProcessLogPayment.class);
-    private ConfigConsumer config;
-    ConsumerLogLandingPage consumer;
-    
-    private static final int MAXIMUM_THREAD = 100;
-    
-    public ProcessLandingPage(ConfigConsumer config){
-        this.config = config;
+    public ProcessLogLandingPage(ConfigConsumer config, int maximumThread) throws ConfigException{
+        super(config, maximumThread);
+        try {
+            consumer = new ConsumerLogLandingPage(constant.KafkaConstantString.TOPIC_LANDING_PAGE, configConsumer);
+        } catch (ConfigException ex) {
+            throw new ConfigException("Cannot create consumer",ex);
+        }
     }
+
+    public ProcessLogLandingPage(ConfigConsumer config) throws ConfigException {
+        this(config, DEFAULT_MAXIMUM_THREAD);
+    }
+    
     @Override
     public void run() {
-        try{
-            consumer = new ConsumerLogLandingPage(constant.KafkaConstantString.TOPIC_LANDING_PAGE,config);
-        }
-        catch(ConfigException ex){
-            System.out.println("Error when create consumer"+ex.getMessage());
-            System.exit(0);
-        }
-        ExecutorService excutor = Executors.newFixedThreadPool(MAXIMUM_THREAD);
+        excutor = Executors.newFixedThreadPool(maximumThread);
         while(true){
             try{
                 ArrayList<LogLandingPage> list = (ArrayList<LogLandingPage>) consumer.poolLog(0);
                 if (list.size()>0) {
                     for(LogLandingPage log:list){
-                        System.out.println(log.parse2String());
+//                        logger.info(log.parse2String());
                         excutor.submit(new WorkerLogLandingPage(log));
                     }
                 }
     
             }catch(Exception ex){
-                logger.error(ex.getMessage());
+                logger.error(ex);
             }
         }
     }

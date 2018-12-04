@@ -14,7 +14,7 @@ public class DBConstantString {
     public static final long serialVersionUID = 4548952039293333L;
     
     // For identify node config for redis database
-    public static final String DATABASE_REDIS = "database_redis";
+    public static final String DATABASE_REDIS_NODE = "database_redis";
     
     // For identify node config for leveldb database
     public static final String DATABASE_LEVELDB = "database_leveldb";
@@ -84,6 +84,8 @@ public class DBConstantString {
     // WARNING: just ONLY use for LEVELDB
     // Constant String config for levelDB
     /***************************************************************************/
+    
+    public static final String DATABASE_NAME = "database_name";
     
     public static final String CREATE_IF_MISSING_CONFIG = "create_if_missing";
 

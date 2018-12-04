@@ -7,10 +7,10 @@ package handler;
 
 import api.ApiOutput;
 import api.ApiServlet;
+import configuration.ConfigFactory;
 import configuration.ConfigProducer;
 import exception.ConfigException;
 import exception.ParseLogException;
-import object.log.LogLandingPage;
 import object.log.LogPayment;
 import message.queue.ProducerLogPayment;
 import javax.servlet.http.HttpServletRequest;
@@ -30,11 +30,9 @@ public class LogPaymentController extends ApiServlet {
     
     static {
         try {
-            confifProducer = new ConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
+            confifProducer = ConfigFactory.getConfigProducer(constant.PathConstant.PATH_TO_PRODUCER_CONFIG_FILE);
         } catch (ConfigException ex) {
-            logger.info(ex.getMessage());
             logger.error(ex);
-            System.exit(0);
         }
     }
     
