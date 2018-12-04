@@ -80,9 +80,9 @@ public class CacheLandingPage {
             pool = new DatabaseConnectionPoolRedis(factory,config);
             configSystem = new ConfigSystem();
         } catch (ConfigException ex) {
-            System.out.println(ex.getMessage());
+//            System.out.println(ex.getMessage());
             logger.info(ex.getMessage());
-            System.exit(0);
+//            System.exit(0);
         }
     }
     
@@ -203,7 +203,7 @@ public class CacheLandingPage {
             dbcnn = pool.borrowObjectFromPool();
             Jedis jedis = dbcnn.getConnection();
 
-                Map<String, String> listGame = jedis.hgetAll(session);
+            Map<String, String> listGame = jedis.hgetAll(session);
             
             if(listGame.size()<=0){
                 return null;
