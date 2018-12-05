@@ -32,7 +32,7 @@ public class LogLoginSerializer implements Serializer<LogLogin> {
         try {
             returnVal = objMapper.writeValueAsString(arg1).getBytes();
         } catch (JsonProcessingException ex) {
-            logger.error("Cannot serialize",ex);
+            logger.error("Cannot serialize", ex);
         }
         return returnVal;
     }

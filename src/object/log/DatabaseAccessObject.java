@@ -5,12 +5,13 @@
  */
 package object.log;
 
+import database.connection.DatabaseConnection;
+import exception.DatabaseException;
+
 /**
  *
  * @author root
  */
-public interface Log extends DatabaseAccessObject{
-    // Help producer Kafka can access with Log instance;
-    public String parse2String();
-    
+public interface DatabaseAccessObject {
+    public boolean access(DatabaseConnection dbcnn) throws DatabaseException;
 }

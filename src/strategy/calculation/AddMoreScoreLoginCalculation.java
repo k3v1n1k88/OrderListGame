@@ -21,7 +21,9 @@ public class AddMoreScoreLoginCalculation extends PointCalculation{
     public long calculatePoint() throws CalculationException {
         
         if(this.latestLoginTime > this.currentTime){
-            throw new CalculationException();
+            throw new CalculationException("Current login time is smaller than lastestLoginTime"
+                    + "\n" + "current time: "+this.currentTime
+                    + "\n" + "latest login time"+this.latestLoginTime);
         }
         
         long plusScore = AddMoreScoreLoginCalculation.configOfSystem.getPointPerLogin();

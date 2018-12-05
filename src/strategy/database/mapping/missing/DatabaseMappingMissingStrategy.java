@@ -5,9 +5,7 @@
  */
 package strategy.database.mapping.missing;
 
-import exception.DatabaseException;
 import object.log.LogPayment;
-import java.io.IOException;
 
 /**
  *

@@ -46,7 +46,7 @@ public class ServiceDaemon {
             new Thread(new ProcessLogLogin(configConsumer, configServer.getMaxThreadProcess())).start();
             
         }catch(ConfigException cex){
-            logger.error("Cannot load config from file",cex);
+            logger.error("Cannot load config from file", cex);
             System.exit(0);
         }
         

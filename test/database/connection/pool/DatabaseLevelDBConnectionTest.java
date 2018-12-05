@@ -72,6 +72,8 @@ public class DatabaseLevelDBConnectionTest {
         } catch (IOException ex) {
             fail("Fail when create connection");
             throw ex;
+        } catch (DatabaseException ex) {
+            java.util.logging.Logger.getLogger(DatabaseLevelDBConnectionTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

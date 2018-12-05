@@ -43,7 +43,7 @@ public class ProcessLogLogin extends ProcessLogAbstract{
                 ArrayList<LogLogin> list = (ArrayList<LogLogin>) consumer.poolLog(0);
                 if (list.size()>0) {
                     for(LogLogin log:list){
-                        logger.info(log.parse2String());
+//                        logger.info(log.parse2String());
                         excutor.submit(new WorkerLogLogin(log));
                     }
                 }

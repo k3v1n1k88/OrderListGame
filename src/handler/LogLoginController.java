@@ -55,10 +55,10 @@ public class LogLoginController extends ApiServlet{
             ProducerLogLogin prod = new ProducerLogLogin(constant.KafkaConstantString.TOPIC_LOG_LOGIN,LogLoginController.confifProducer);
             prod.sendLog(logLogin);
         } catch (ConfigException ex) {
-            logger.error(ex);
+            logger.error(ex.getMessage(),ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, "System happened error when set up");
         } catch(Exception ex){
-            logger.error(ex);
+            logger.error(ex.getMessage(),ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
         }
         return new ApiOutput(ApiOutput.STATUS_CODE.SUCCESS.errorCode, ApiOutput.STATUS_CODE.SUCCESS.msg);

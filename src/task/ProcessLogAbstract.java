@@ -8,14 +8,13 @@ package task;
 import configuration.ConfigConsumer;
 import java.util.concurrent.ExecutorService;
 import message.queue.ConsumerLogAbstract;
-import message.queue.ConsumerLogLandingPage;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author root
  */
-public abstract class ProcessLogAbstract implements Runnable{
+    public abstract class ProcessLogAbstract implements Runnable{
     
     protected static final Logger logger = Logger.getLogger(ProcessLogAbstract.class);
     protected static final int DEFAULT_MAXIMUM_THREAD = 100;

@@ -7,6 +7,7 @@ package task;
 
 import configuration.ConfigConnectionPool;
 import configuration.ConfigFactory;
+import configuration.ConfigScribe;
 import configuration.ConfigSystem;
 import database.connection.DatabaseConnectionPool;
 import database.connection.DatabaseConnectionPoolRedis;
@@ -15,6 +16,7 @@ import database.connection.DatabaseRedisConnectionFactory;
 import exception.ConfigException;
 import object.log.Log;
 import org.apache.log4j.Logger;
+import zcore.utilities.ScribeServiceClient;
 
 /**
  *
@@ -27,10 +29,12 @@ public abstract class WorkerAbstract<L extends Log> implements Runnable{
     
     protected static ConfigSystem configSystem;
     protected static ConfigConnectionPool configPool;
+    protected static ConfigScribe configScribe;
     protected static DatabaseConnectionPool<DatabaseRedisConnection> poolRedis;
     
     static {
         try {
+            configScribe = ConfigFactory.getConfigScribe(constant.PathConstant.PATH_TO_SCRIBE_CONFIG_FILE);
             configPool = ConfigFactory.getConfigConnectionPool(constant.PathConstant.PATH_TO_POOL_CONFIG_FILE);
             configSystem = ConfigFactory.getConfigSystem(constant.PathConstant.PATH_TO_SYSTEM_CONFIG_FILE);
             DatabaseRedisConnectionFactory factory = new DatabaseRedisConnectionFactory();
@@ -44,6 +48,18 @@ public abstract class WorkerAbstract<L extends Log> implements Runnable{
     
     public WorkerAbstract(L log){
         this.log = log;
+    }
+    
+    public static ScribeServiceClient getScribeClient(){
+        return ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                );
     }
     
     @Override

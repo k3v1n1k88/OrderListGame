@@ -51,7 +51,7 @@ public class RecommendationController extends ApiServlet{
             }
             return apiOutput;
         } catch (ExecutionException ex) {
-            logger.error(ex);
+            logger.error(ex.getMessage(), ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, ex.getMessage());
         }
     }

@@ -5,6 +5,8 @@
  */
 package strategy.calculation;
 
+import exception.CalculationException;
+
 /**
  *
  * @author root
@@ -16,7 +18,13 @@ public class ReCalculation extends PointCalculation {
     }
 
     @Override
-    public long calculatePoint() {
+    public long calculatePoint() throws CalculationException {
+        if(this.latestLoginTime > this.currentTime){
+            throw new CalculationException("Current login time is smaller than lastestLoginTime"
+                    + "\n" + "current time: "+this.currentTime
+                    + "\n" + "latest login time"+this.latestLoginTime);
+        }
+        
         double deltaSquare = Math.pow(this.currentTime-this.latestLoginTime,2.0);  
         return (long) (this.currentPoint*Math.pow(ReCalculation.configOfSystem.getBaseOfPower(), -1.0*deltaSquare));
     }

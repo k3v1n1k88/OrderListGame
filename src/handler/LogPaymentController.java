@@ -56,16 +56,17 @@ public class LogPaymentController extends ApiServlet {
         try {
             logPayment= new LogPayment(userID,gameID,amountString);
             
-            ProducerLogPayment prod = new ProducerLogPayment(constant.KafkaConstantString.TOPIC_LOG_PAYMENT,LogPaymentController.confifProducer);
+            ProducerLogPayment prod = new ProducerLogPayment(constant.KafkaConstantString.TOPIC_LOG_PAYMENT, LogPaymentController.confifProducer);
             prod.sendLog(logPayment);
         } catch (ConfigException ex) {
-            logger.error(ex.getMessage());
+            logger.error(ex.getMessage(),ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.SYSTEM_ERROR.errorCode, "System happened error when set up");
         } catch(ParseLogException pex){
-            logger.error(pex);
+            logger.error(pex.getMessage(),pex);
             return new ApiOutput(ApiOutput.STATUS_CODE.BAD_REQUEST.errorCode, "Parameter is not valid");
         } 
         catch(Exception ex){
+            logger.error(ex.getMessage(),ex);
             return new ApiOutput(ApiOutput.STATUS_CODE.REQUEST_TIME_OUT.errorCode, "Cannot push message to kafkaf");
         }
         return new ApiOutput(ApiOutput.STATUS_CODE.SUCCESS.errorCode, ApiOutput.STATUS_CODE.SUCCESS.msg);

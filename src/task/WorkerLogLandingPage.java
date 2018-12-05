@@ -5,24 +5,13 @@
  */
 package task;
 
-import strategy.calculation.PointCalculation;
-import strategy.calculation.ReCalculation;
-import configuration.ConfigConnectionPool;
-import configuration.ConfigFactory;
-import configuration.ConfigSystem;
-import database.connection.DatabaseConnectionPool;
-import database.connection.DatabaseConnectionPoolRedis;
+
 import database.connection.DatabaseRedisConnection;
-import database.connection.DatabaseRedisConnectionFactory;
-import exception.CalculationException;
-import exception.ConfigException;
+import exception.DatabaseException;
 import exception.PoolException;
 import object.log.LogLandingPage;
-import java.util.Iterator;
-import java.util.Set;
-import object.value.database.ScoreValueWrapper;
 import org.apache.log4j.Logger;
-import redis.clients.jedis.Jedis;
+import zcore.utilities.ScribeServiceClient;
 
 /**
  *
@@ -39,31 +28,23 @@ public class WorkerLogLandingPage extends WorkerAbstract<LogLandingPage>{
     @Override
     protected boolean processLog() {
         DatabaseRedisConnection dbcnn = null;
-        
         try {
             dbcnn = poolRedis.borrowObjectFromPool();
-            Jedis jedis = dbcnn.getConnection();
-            Set<String> gameIDList = jedis.keys(log.getSession());
-            Iterator<String> ite = gameIDList.iterator();
-            while(ite.hasNext()){
-                
-                String gameID = ite.next();
-                String infoGame = jedis.hget(log.getSession(), gameID);
-                
-                // Calculate new score
-                ScoreValueWrapper scoreValue = ScoreValueWrapper.parse(infoGame);
-                long currentScore = scoreValue.getScore();
-                PointCalculation pointCal = new ReCalculation(currentScore,scoreValue.getLatestLogin(),log.getTimeStamp());
-                long newScore = pointCal.calculatePoint();
-                
-                // Modify score
-                scoreValue.setScore(newScore);
-                
-                jedis.hset(log.getSession(), gameID, scoreValue.toJSONString());
-                        
-            }
-        } catch (PoolException | CalculationException ex) {
-            logger.error(ex);
+            this.log.access(dbcnn);
+        } catch (PoolException ex) {
+            logger.error(ex.getMessage(),ex);
+            ScribeServiceClient.getInstance(configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getHost(),
+                        configScribe.getPort(),
+                        configScribe.getMaxConnection(),
+                        configScribe.getMaxConnectionPerHost(),
+                        configScribe.getInitConnection(),
+                        configScribe.getTimeout()
+                ).writeLog2("LogLandingPagetErrorByPool", this.log.parse2String());
+        } catch (DatabaseException ex) {
+            logger.error(ex.getMessage(),ex);
+            WorkerLogLandingPage.getScribeClient().writeLog2("LogLandingPagetErrorByAccessDatabase", this.log.parse2String());
         } finally{
             try {
                 if(dbcnn != null)

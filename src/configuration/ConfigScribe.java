@@ -7,6 +7,8 @@ package configuration;
 
 import constant.ScribeConstantString;
 import exception.ConfigException;
+import java.util.Calendar;
+import java.util.Date;
 import org.apache.log4j.Logger;
 import zcore.utilities.ScribeServiceClient;
 /**
@@ -100,7 +102,7 @@ public class ConfigScribe extends ConfigAbstract{
                 this.maxConnection, 
                 this.maxConnectionPerHost, 
                 this.initConnection, 
-                this.timeout).writeLog2(category, "test");
+                this.timeout).writeLog2(category, "Checking connection...\nOn..." + Calendar.getInstance().toString());
         if(ret == false){
             throw new ConfigException("Cannot connect to Scribe");
         }
